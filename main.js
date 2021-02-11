@@ -1,4 +1,3 @@
-const { enable3d, Scene3D, Canvas, ThirdDimension, ExtendedObject3D, FirstPersonControls, THREE } = ENABLE3D
 let player;
 let canJump = true;
 let targetXRot = 0;
@@ -11,9 +10,11 @@ let currYOffset = 0.35;
 let targetYOffset = 0.35;
 let cooldown = 0;
 let targetCooldown = 0;
+let jumpCooldown = 0;
 let blocking = false;
 let slashing = false;
 let objects = [];
+const healthBars = document.getElementById("healthBars").getContext("2d");
 
 function angleDifference(angle1, angle2) {
     const diff = ((angle2 - angle1 + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -32,8 +33,11 @@ class MainScene extends Scene3D {
             const rotation = this.third.camera.getWorldDirection(direction)
             const cTheta = Math.atan2(rotation.x, rotation.z);
             const angleDiff = cTheta - theta;
-            if (angleDiff < (slashing ? Math.PI / 4 : Math.PI / 6) && angleDiff > (slashing ? -Math.PI / 4 : 0) && dist < 3.5 && Math.abs(object.position.y - player.position.y) < 2) {
+            if (angleDiff < (slashing ? Math.PI / 4 : Math.PI / 6) && angleDiff > (slashing ? -Math.PI / 4 : 0) && dist < 3.5 && Math.abs(object.position.y - player.position.y) < 2 && !object.dead) {
                 object.body.setVelocity(object.body.velocity.x + 3 * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + 2.5, object.body.velocity.z + 3 * (1 + +slashing) * Math.cos(theta));
+                if (object.health) {
+                    object.health -= Math.floor(Math.random() * 5 + 3 + 3 * +slashing);
+                }
             }
             // const cameraTheta = Math.atan2(this.third.camera.rotation.x, this.third.camera.rotation.z);
             /*if (Math.abs(this.third.camera.position.angleTo(object.position)) < Math.PI / 4) {
@@ -47,26 +51,38 @@ class MainScene extends Scene3D {
             //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
             objects.push(this.third.physics.add.box({
-                x: Math.random() * 20 - 10,
+                x: 3.5,
                 y: Math.random() * 5,
-                z: Math.random() * 20 - 10,
+                z: 3.5,
                 width: Math.random(),
                 height: Math.random(),
                 depth: Math.random()
             }, { phong: { color: 0xffffff * Math.random() } }));
         }
         this.third.renderer.gammaFactor = 1.5;
+        const walls = [];
+        walls.push(this.third.physics.add.box({ height: 2.5, z: 10, y: 1.25, width: 21, depth: 1 }, { lambert: { color: 0x666666 } }));
+        walls.push(this.third.physics.add.box({ height: 2.5, z: -10, y: 1.25, width: 21, depth: 1 }, { lambert: { color: 0x666666 } }));
+        walls.push(this.third.physics.add.box({ height: 2.5, x: 10, y: 1.25, width: 1, depth: 21 }, { lambert: { color: 0x666666 } }));
+        walls.push(this.third.physics.add.box({ height: 2.5, x: -10, y: 1.25, width: 1, depth: 21 }, { lambert: { color: 0x666666 } }));
 
+        walls.forEach(wall => {
+            wall.body.setCollisionFlags(2);
+        });
+        this.walls = walls;
         // add red dot
         // add player
         this.player = this.third.physics.add.sphere();
         this.player.position.setY(1);
+        this.player.position.setZ(5);
+        this.player.health = 100;
+        this.player.maxHealth = 100;
         player = this.player;
-        this.player.body.on.collision((otherObject, event) => {
-            if (otherObject.name === "ground" && event === "collision") {
-                canJump = true;
-            }
-        });
+        /* this.player.body.on.collision((otherObject, event) => {
+             if ((otherObject.name === "ground") && event === "collision") {
+                 canJump = true;
+             }
+         });*/
         this.player.body.setFriction(1);
         this.third.load.fbx("samurai-sword.fbx").then(object => {
             this.sword = object;
@@ -82,49 +98,59 @@ class MainScene extends Scene3D {
             this.third.add.existing(this.sword);
         })
         this.enemy = new ExtendedObject3D();
-        const animations = ["Idle", "Running"];
         this.third.load.fbx('Breathing Idle.fbx').then(object => {
-                //object.scale.set(0.0075, 0.0075, 0.0075);
-                this.enemy.add(object);
-                this.enemy.position.set(5, 1, 5);
-                this.enemy.scale.set(0.0075, 0.0075, 0.0075);
-                this.third.animationMixers.add(this.enemy.animation.mixer);
-                this.enemy.animation.add('Idle', object.animations[0]);
-                this.enemy.animation.play('Idle');
-                this.enemy.cooldown = 0;
-                this.third.load.fbx("sg-sword.fbx").then(object => {
-                    object.scale.set(0.03, 0.03, 0.03);
-                    //this.third.add.existing(object);
-                    this.enemy.traverse(child => {
-                        if (child.name === 'mixamorig6RightHand') {
-                            //console.log("YAY")
-                            //this.third.add.box({ width: 20, height: 20, depth: 20 })
-                            child.add(object);
-                        }
-                    })
-                });
-                this.third.add.existing(this.enemy);
-                this.third.physics.add.existing(this.enemy, { shape: 'box', ignoreScale: true, offset: { y: -0.5 } });
-                objects.push(this.enemy);
-                this.enemy.loaded = true;
-                //animations.slice(1).forEach(key => {
-                this.third.load.fbx(`Warrior Running.fbx`).then(object => {
-                    this.enemy.animation.add("R", object.animations[0]);
-                    //this.enemy.animation.play('R');
-                    //this.enemy.animation.mixer._actions[0].setEffectiveWeight(1);
-                    //this.enemy.animation.mixer._actions[1].setEffectiveWeight(0);
-                    this.enemy.aggro = false;
-                    this.third.load.fbx("Warrior Slash.fbx").then(object => {
-                        this.enemy.animation.add("S", object.animations[0]);
-                        //this.enemy.animation.play('S');
-                        //this.enemy.animation.mixer._actions[2].setEffectiveWeight(0);
-                    })
-                });
-                //})
+            //object.scale.set(0.0075, 0.0075, 0.0075);
+            this.enemy.add(object);
+            this.enemy.position.set(0, 1, 5);
+            this.enemy.scale.set(0.0075, 0.0075, 0.0075);
+            this.third.animationMixers.add(this.enemy.animation.mixer);
+            this.enemy.animation.add('Idle', object.animations[0]);
+            this.third.load.fbx("sg-sword.fbx").then(object => {
+                object.scale.set(0.03, 0.03, 0.03);
                 //this.third.add.existing(object);
-                //this.third.physics.add.existing(object);
-            })
-            // add first person controls
+                this.enemy.traverse(child => {
+                    if (child.name === 'mixamorig6RightHand') {
+                        //console.log("YAY")
+                        //this.third.add.box({ width: 20, height: 20, depth: 20 })
+                        child.add(object);
+                    }
+                })
+            });
+            this.third.add.existing(this.enemy);
+            this.third.physics.add.existing(this.enemy, { shape: 'box', ignoreScale: true, offset: { y: -0.5 } });
+            objects.push(this.enemy);
+            this.enemy.loaded = true;
+            //animations.slice(1).forEach(key => {
+            /*this.third.load.fbx(`Warrior Running.fbx`).then(object => {
+                //console.log(JSON.stringify(object.animations[0]));
+                this.enemy.animation.add("R", THREE.AnimationClip.parse(JSON.parse(JSON.stringify(object.animations[0].toJSON()))));
+                //this.enemy.animation.play('R');
+                //this.enemy.animation.mixer._actions[0].setEffectiveWeight(1);
+                //this.enemy.animation.mixer._actions[1].setEffectiveWeight(0);
+                this.third.load.fbx("Warrior Slash.fbx").then(object => {
+                    this.enemy.animation.add("S", object.animations[0]);
+                    //this.enemy.animation.play('S');
+                    //this.enemy.animation.mixer._actions[2].setEffectiveWeight(0);
+                    this.third.load.fbx("Warrior Death.fbx").then(object => {
+                        this.enemy.animation.add("D", object.animations[0]);
+                        this.enemyAI = new EnemyAI(this.enemy);
+                    })
+                });
+            });*/
+            const animsToLoad = ["running", "slashing", "death"];
+            (async() => {
+                for (const anim of animsToLoad) {
+                    const animText = await fetch(`warrior-${anim}.json`);
+                    const animJson = await animText.json();
+                    this.enemy.animation.add(anim[0].toUpperCase(), THREE.AnimationClip.parse(animJson));
+                }
+                this.enemyAI = new EnemyAI(this.enemy);
+            })();
+            //})
+            //this.third.add.existing(object);
+            //this.third.physics.add.existing(object);
+        });
+        // add first person controls
         this.firstPersonControls = new FirstPersonControls(this.third.camera, this.player, {})
 
         // lock the pointer and update the first person control
@@ -167,65 +193,24 @@ class MainScene extends Scene3D {
     }
 
     update(time, delta) {
-        /* if (this.enemy) {
-             this.enemy.animation.play('Running');
-         }*/
-        //this.enemy.lookAt(player.position);
-        //this.enemy.lookAt(this.player.position);
-        this.enemy.cooldown--;
-        if (this.enemy.cooldown === 0) {
-            if (this.enemy.position.distanceTo(player.position) > 2) {
-                this.enemy.animation.play("R");
-                this.enemy.attacking = false;
-            }
-        }
-        if (this.enemy && this.enemy.body && (this.enemy.position.distanceTo(player.position) < 5 || this.enemy.aggro) && !this.enemy.attacking) {
-            if (!this.enemy.aggro) {
-                this.enemy.animation.play("R");
-                //this.enemy.animation.mixer._actions[0].setEffectiveWeight(0);
-                //this.enemy.animation.mixer._actions[1].setEffectiveWeight(1);
-                //this.enemy.animation.mixer._actions[2].setEffectiveWeight(0);
-                /*this.enemy.animation.mixer._actions.forEach(a => {
-                    a.setEffectiveWeight(0);
-                });*/
-                //this.enemy.animation.mixer._actions[0].setEffectiveWeight(0);
-                //this.enemy.animation.mixer._actions[1].setEffectiveWeight(1);
-            }
-            this.enemy.aggro = true;
-            const theta = Math.atan2(this.player.position.x - this.enemy.position.x, this.player.position.z - this.enemy.position.z);
-            this.enemy.body.setVelocity((this.enemy.body.velocity.x + 0.1 * Math.sin(this.enemy.body.rotation.y)) * 0.975, this.enemy.body.velocity.y, (this.enemy.body.velocity.z + 0.1 * Math.cos(this.enemy.body.rotation.y)) * 0.975);
-            //console.log(this.enemy.body);
-            //console.log((theta - this.enemy.rotation.y));
-            this.enemy.body.setAngularVelocityX(-this.enemy.body.rotation.x / 5);
-            this.enemy.body.setAngularVelocityZ(-this.enemy.body.rotation.z / 5);
-            this.enemy.body.setAngularVelocityY(-angleDifference(theta, this.enemy.body.rotation.y) * 4);
-        }
-        /*if (this.enemy.position.distanceTo(player.position) > 12) {
-            if (this.enemy.aggro) {
-                this.enemy.animation.play("Idle");
-            }
-            this.enemy.aggro = false;
-            // this.enemy.animation.mixer._actions[0].setEffectiveWeight(1);
-            //this.enemy.animation.mixer._actions[1].setEffectiveWeight(0);
-        }*/
-        if (this.enemy && this.enemy.body && this.enemy.position.distanceTo(player.position) < 2 && this.enemy.cooldown < 0) {
-            if (!this.enemy.attacking) {
-                this.enemy.animation.play("S");
-            }
-            this.enemy.attacking = true;
-            this.enemy.cooldown = 100;
-            setTimeout(() => {
-                if (this.enemy.position.distanceTo(player.position) < 3) {
-                    if (blocking) {
-                        targetCooldown = 100;
-                    } else {
-                        this.player.body.setVelocity(this.player.body.velocity.x + 5 * Math.sin(this.enemy.body.rotation.y), this.player.body.velocity.y + 4, this.player.body.velocity.z + 5 * Math.cos(this.enemy.body.rotation.y));
-                    }
-                }
-            }, 500);
-            /*this.enemy.animation.mixer._actions[0].setEffectiveWeight(0);
-            this.enemy.animation.mixer._actions[1].setEffectiveWeight(0);
-            this.enemy.animation.mixer._actions[2].setEffectiveWeight(1);*/
+        jumpCooldown -= 1;
+        this.player.health = Math.max(this.player.health, 0);
+        healthBars.fillStyle = "black";
+        healthBars.fillRect(76, 1, 158, 28);
+        healthBars.fillStyle = `rgb(${255 * (1 - (player.health / player.maxHealth))}, ${255 * (player.health / player.maxHealth)}, 0)`;
+        healthBars.fillRect(80, 5, 150 * (player.health / player.maxHealth), 20);
+        healthBars.fillStyle = "black";
+        healthBars.fillRect(76, 36, 158, 28);
+        healthBars.fillStyle = `rgb(${255 * (1 - (this.enemy.health / this.enemy.maxHealth))}, ${255 * (this.enemy.health / this.enemy.maxHealth)}, 0)`;
+        healthBars.fillRect(80, 40, 150 * (this.enemy.health / this.enemy.maxHealth), 20);
+        healthBars.font = "30px monospace";
+        healthBars.fillStyle = "black";
+        healthBars.fillText("You: ", 0, 25);
+        healthBars.font = "20px monospace";
+        healthBars.fillStyle = "black";
+        healthBars.fillText("Enemy: ", 0, 55);
+        if (this.enemyAI) {
+            this.enemyAI.update(player, this.third.scene.children.find(x => x.name === "ground"));
         }
         const block = this.input.mousePointer.rightButtonDown();
         if (!block) {
@@ -283,20 +268,52 @@ class MainScene extends Scene3D {
             this.sword.position.copy(pos);
             const rot = this.third.camera.rotation;
             this.sword.rotation.copy(rot);
-            document.getElementById("log1").innerHTML = `Camera Position: [${pos.x}, ${pos.y}, ${pos.z}]`;
-            document.getElementById("log2").innerHTML = `Camera Rotation: [${rot.x}, ${rot.y}, ${rot.z}]`;
             this.sword.rotateX(currXRot);
             this.sword.rotateY(currYRot);
             this.sword.rotateZ((-3 * (Math.PI / 2)) + Math.PI + 0.2);
-            document.getElementById("log3").innerHTML = `Sword Position: [${this.sword.position.x}, ${this.sword.position.y}, ${this.sword.position.z}]`;
-            document.getElementById("log4").innerHTML = `Sword Rotation: [${this.sword.rotation.x}, ${this.sword.rotation.y}, ${this.sword.rotation.z}]`;
+        }
+        if (this.third.scene.children.find(x => x.name === "ground")) {
+            /*const groundRaycaster = new THREE.Raycaster();
+            groundRaycaster.set(
+                this.player.position.clone().add(new THREE.Vector3(0, 0, 0)),
+                new THREE.Vector3(0, 0, 0));
+            const intersects = groundRaycaster.intersectObject(this.third.scene.children.find(x => x.name === "ground"));
+            console.log(intersects);*/
+            const ground = this.third.scene.children.find(x => x.name === "ground");
+            ground.geometry.computeBoundingBox();
+            [ground.geometry.boundingBox.min.y, ground.geometry.boundingBox.min.z] = [ground.geometry.boundingBox.min.z, ground.geometry.boundingBox.min.y];
+            [ground.geometry.boundingBox.max.y, ground.geometry.boundingBox.max.z] = [ground.geometry.boundingBox.max.z, ground.geometry.boundingBox.max.y];
+            if (ground.geometry.boundingBox.containsPoint({
+                    x: player.position.x,
+                    y: player.position.y - 1.025,
+                    x: player.position.z
+                })) {
+                canJump = true;
+            }
+            /*this.walls.forEach(wall => {
+                wall.geometry.computeBoundingBox();
+                //[wall.geometry.boundingBox.min.y, wall.geometry.boundingBox.min.z] = [wall.geometry.boundingBox.min.z, wall.geometry.boundingBox.min.y];
+                //[wall.geometry.boundingBox.max.y, wall.geometry.boundingBox.max.z] = [wall.geometry.boundingBox.max.z, wall.geometry.boundingBox.max.y];
+                //console.log(wall.geometry.boundingBox);
+                if (wall.geometry.boundingBox.containsPoint({
+                        x: player.position.x,
+                        y: player.position.y - 1.025,
+                        x: player.position.z
+                    })) {
+                    console.log("YAY")
+                    canJump = true;
+                }
+            })*/
+            if (jumpCooldown > 0) {
+                canJump = false;
+            }
         }
         const oldVelocity = this.player.body.velocity;
         const velocityUpdate = [oldVelocity.x, oldVelocity.y, oldVelocity.z];
         const direction = new THREE.Vector3();
         const rotation = this.third.camera.getWorldDirection(direction);
         const theta = Math.atan2(rotation.x, rotation.z);
-        const speed = 0.25;
+        const speed = blocking ? 0.06 : 0.25;
         if (this.keys.w.isDown) {
             velocityUpdate[0] += Math.sin(theta) * speed;
             velocityUpdate[2] += Math.cos(theta) * speed;
@@ -322,6 +339,7 @@ document.onkeydown = (e) => {
         const velocityUpdate = [oldVelocity.x, oldVelocity.y, oldVelocity.z];
         velocityUpdate[1] += 5;
         player.body.setVelocity(...velocityUpdate);
+        jumpCooldown = 15;
         canJump = false;
     }
 }
