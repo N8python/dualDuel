@@ -13,8 +13,11 @@ let targetCooldown = 0;
 let jumpCooldown = 0;
 let blocking = false;
 let slashing = false;
+let framesSinceDeath = 0;
 let objects = [];
 const healthBars = document.getElementById("healthBars").getContext("2d");
+const loading = document.getElementById("loading");
+const gameOverMessage = document.getElementById("gameOverMessage");
 
 function angleDifference(angle1, angle2) {
     const diff = ((angle2 - angle1 + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -37,6 +40,7 @@ class MainScene extends Scene3D {
                 object.body.setVelocity(object.body.velocity.x + 3 * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + 2.5, object.body.velocity.z + 3 * (1 + +slashing) * Math.cos(theta));
                 if (object.health) {
                     object.health -= Math.floor(Math.random() * 5 + 3 + 3 * +slashing);
+                    object.health = Math.max(0, object.health);
                 }
             }
             // const cameraTheta = Math.atan2(this.third.camera.rotation.x, this.third.camera.rotation.z);
@@ -72,9 +76,7 @@ class MainScene extends Scene3D {
         this.walls = walls;
         // add red dot
         // add player
-        this.player = this.third.physics.add.sphere();
-        this.player.position.setY(1);
-        this.player.position.setZ(5);
+        this.player = this.third.physics.add.sphere({ z: -5 });
         this.player.health = 100;
         this.player.maxHealth = 100;
         player = this.player;
@@ -84,7 +86,9 @@ class MainScene extends Scene3D {
              }
          });*/
         this.player.body.setFriction(1);
+        loading.innerHTML = "Loading Weapon...";
         this.third.load.fbx("samurai-sword.fbx").then(object => {
+            loading.innerHTML = "Loading Enemy...";
             this.sword = object;
             this.sword.scale.set(0.0015, 0.0015, 0.0015);
             this.sword.rotation.z = (-3 * (Math.PI / 2)) + Math.PI;
@@ -139,12 +143,18 @@ class MainScene extends Scene3D {
             });*/
             const animsToLoad = ["running", "slashing", "death"];
             (async() => {
+                loading.innerHTML = `Loading Enemy Animations (0/${animsToLoad.length})...`;
                 for (const anim of animsToLoad) {
+                    loading.innerHTML = `Loading Enemy Animations (${animsToLoad.indexOf(anim)}/${animsToLoad.length})...`;
                     const animText = await fetch(`warrior-${anim}.json`);
                     const animJson = await animText.json();
                     this.enemy.animation.add(anim[0].toUpperCase(), THREE.AnimationClip.parse(animJson));
                 }
                 this.enemyAI = new EnemyAI(this.enemy);
+                loading.innerHTML = `Loaded!`;
+                setTimeout(() => {
+                    loading.innerHTML = "";
+                })
             })();
             //})
             //this.third.add.existing(object);
@@ -155,6 +165,9 @@ class MainScene extends Scene3D {
 
         // lock the pointer and update the first person control
         this.input.on('pointerdown', () => {
+            if (this.player && this.player.health === 0) {
+                return;
+            }
             if (this.input.mousePointer.rightButtonDown() && cooldown < 10) {
                 blocking = true;
                 targetYRot = -Math.PI / 2;
@@ -174,7 +187,7 @@ class MainScene extends Scene3D {
             this.input.mouse.requestPointerLock()
         })
         this.input.on('pointermove', pointer => {
-            if (this.input.mouse.locked) {
+            if (this.input.mouse.locked && this.player && this.player.health > 0) {
                 this.firstPersonControls.update(pointer.movementX, pointer.movementY)
             }
         })
@@ -195,6 +208,12 @@ class MainScene extends Scene3D {
     update(time, delta) {
         jumpCooldown -= 1;
         this.player.health = Math.max(this.player.health, 0);
+        if (this.player.health === 0) {
+            if (framesSinceDeath === 0) {
+                gameOverMessage.innerHTML = "You Died!"
+            }
+            framesSinceDeath++;
+        }
         healthBars.fillStyle = "black";
         healthBars.fillRect(76, 1, 158, 28);
         healthBars.fillStyle = `rgb(${255 * (1 - (player.health / player.maxHealth))}, ${255 * (player.health / player.maxHealth)}, 0)`;
@@ -209,6 +228,9 @@ class MainScene extends Scene3D {
         healthBars.font = "20px monospace";
         healthBars.fillStyle = "black";
         healthBars.fillText("Enemy: ", 0, 55);
+        if (loading.innerHTML !== "") {
+            return;
+        }
         if (this.enemyAI) {
             this.enemyAI.update(player, this.third.scene.children.find(x => x.name === "ground"));
         }
@@ -245,7 +267,7 @@ class MainScene extends Scene3D {
         if (Math.abs(targetCooldown - cooldown) < 0.01) {
             targetCooldown = 0;
         }
-        if (this.keys.w.isDown) {
+        if (this.keys.w.isDown && this.player.health > 0) {
             this.bob.x = Math.sin(time * -0.009) * 0.0075;
             this.bob.y = Math.sin(time * 0.009) * 0.0075;
             this.bob.z = Math.sin(time * 0.009) * 0.0075;
@@ -255,11 +277,14 @@ class MainScene extends Scene3D {
             this.bob.z = Math.sin(time * 0.003) * 0.0075;
         }
         this.third.camera.position.y += this.bob.y * 1.75;
+        if (this.player.health === 0) {
+            this.third.camera.rotateZ(Math.PI / 2 * Math.min(framesSinceDeath / 60, 1));
+        }
         if (this.sword) {
             // adjust the position of the rifle to the camera
             const raycaster = new THREE.Raycaster();
             // x and y are normalized device coordinates from -1 to +1
-            raycaster.setFromCamera({ x: currXOffset - this.bob.x, y: -currYOffset - this.bob.y - (cooldown / 100) }, this.third.camera);
+            raycaster.setFromCamera({ x: currXOffset - this.bob.x, y: -currYOffset - this.bob.y - (cooldown / 100) - (framesSinceDeath / 60) }, this.third.camera);
             const pos = new THREE.Vector3();
             pos.copy(raycaster.ray.direction);
             pos.multiplyScalar(1.2 + this.bob.z);
@@ -313,7 +338,10 @@ class MainScene extends Scene3D {
         const direction = new THREE.Vector3();
         const rotation = this.third.camera.getWorldDirection(direction);
         const theta = Math.atan2(rotation.x, rotation.z);
-        const speed = blocking ? 0.06 : 0.25;
+        let speed = blocking ? 0.06 : 0.25;
+        if (player.health === 0) {
+            speed = 0;
+        }
         if (this.keys.w.isDown) {
             velocityUpdate[0] += Math.sin(theta) * speed;
             velocityUpdate[2] += Math.cos(theta) * speed;
@@ -334,7 +362,7 @@ class MainScene extends Scene3D {
     }
 }
 document.onkeydown = (e) => {
-    if (e.key === " " && player && canJump) {
+    if (e.key === " " && player && canJump && player.health > 0) {
         const oldVelocity = player.body.velocity;
         const velocityUpdate = [oldVelocity.x, oldVelocity.y, oldVelocity.z];
         velocityUpdate[1] += 5;
