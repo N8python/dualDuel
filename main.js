@@ -122,7 +122,10 @@ class MainScene extends Scene3D {
                     })
                 });
             });*/
-            const animsToLoad = ["running", "slashing", "death"];
+            instance.third.load.fbx("Excited.fbx").then(object => {
+                console.log(JSON.stringify(object.animations[0].toJSON()))
+            });
+            const animsToLoad = ["running", "slashing", "death", "celebrate"];
             (async() => {
                 loading.innerHTML = `Loading Enemy Animations (0/${animsToLoad.length})...`;
                 for (const anim of animsToLoad) {
@@ -371,7 +374,7 @@ class MainScene extends Scene3D {
     }
 }
 document.onkeydown = (e) => {
-    if (e.key === " " && player && canJump && player.health > 0) {
+    if (e.key === " " && player && canJump && player.health > 0 && loading.innerHTML === "") {
         const oldVelocity = player.body.velocity;
         const velocityUpdate = [oldVelocity.x, oldVelocity.y, oldVelocity.z];
         velocityUpdate[1] += 5;

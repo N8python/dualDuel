@@ -53,7 +53,11 @@ class EnemyAI {
         }
         if (Math.abs(target.position.y - this.enemy.position.y) > 8 || target.health === 0) {
             if (this.enemy.aggro) {
-                this.enemy.animation.play("Idle");
+                if (target.health === 0) {
+                    this.enemy.animation.play("C");
+                } else {
+                    this.enemy.animation.play("Idle");
+                }
             }
             this.enemy.aggro = false;
             this.enemy.attacking = false;
