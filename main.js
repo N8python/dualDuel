@@ -15,6 +15,7 @@ let blocking = false;
 let slashing = false;
 let framesSinceDeath = 0;
 let objects = [];
+let bootFunction;
 const healthBars = document.getElementById("healthBars").getContext("2d");
 const loading = document.getElementById("loading");
 const gameOverMessage = document.getElementById("gameOverMessage");
@@ -28,33 +29,13 @@ class MainScene extends Scene3D {
         super({ key: 'MainScene' })
         this.bob = { x: 0, y: 0, z: 0 };
     }
-    handleSwing() {
-        objects.forEach(object => {
-            const theta = Math.atan2(object.position.x - this.player.position.x, object.position.z - this.player.position.z);
-            const dist = Math.hypot(object.position.x - this.player.position.x, object.position.z - this.player.position.z);
-            const direction = new THREE.Vector3();
-            const rotation = this.third.camera.getWorldDirection(direction)
-            const cTheta = Math.atan2(rotation.x, rotation.z);
-            const angleDiff = cTheta - theta;
-            if (angleDiff < (slashing ? Math.PI / 4 : Math.PI / 6) && angleDiff > (slashing ? -Math.PI / 4 : 0) && dist < 3.5 && Math.abs(object.position.y - player.position.y) < 2 && !object.dead) {
-                object.body.setVelocity(object.body.velocity.x + 3 * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + 2.5, object.body.velocity.z + 3 * (1 + +slashing) * Math.cos(theta));
-                if (object.health) {
-                    object.health -= Math.floor(Math.random() * 5 + 3 + 3 * +slashing);
-                    object.health = Math.max(0, object.health);
-                }
-            }
-            // const cameraTheta = Math.atan2(this.third.camera.rotation.x, this.third.camera.rotation.z);
-            /*if (Math.abs(this.third.camera.position.angleTo(object.position)) < Math.PI / 4) {
-                object.body.setVelocity(3 * Math.sin(theta), 2, 3 * Math.cos(theta));
-            }*/
-        });
-    }
-    create() {
-        this.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 })
-        this.third.warpSpeed('-orbitControls')
+    static loadInstance(instance) {
+        instance.initiated = true;
+        instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 })
+        instance.third.warpSpeed('-orbitControls')
             //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
-            objects.push(this.third.physics.add.box({
+            objects.push(instance.third.physics.add.box({
                 x: 3.5,
                 y: Math.random() * 5,
                 z: 3.5,
@@ -63,56 +44,56 @@ class MainScene extends Scene3D {
                 depth: Math.random()
             }, { phong: { color: 0xffffff * Math.random() } }));
         }
-        this.third.renderer.gammaFactor = 1.5;
+        instance.third.renderer.gammaFactor = 1.5;
         const walls = [];
-        walls.push(this.third.physics.add.box({ height: 2.5, z: 10, y: 1.25, width: 21, depth: 1 }, { lambert: { color: 0x666666 } }));
-        walls.push(this.third.physics.add.box({ height: 2.5, z: -10, y: 1.25, width: 21, depth: 1 }, { lambert: { color: 0x666666 } }));
-        walls.push(this.third.physics.add.box({ height: 2.5, x: 10, y: 1.25, width: 1, depth: 21 }, { lambert: { color: 0x666666 } }));
-        walls.push(this.third.physics.add.box({ height: 2.5, x: -10, y: 1.25, width: 1, depth: 21 }, { lambert: { color: 0x666666 } }));
+        walls.push(instance.third.physics.add.box({ height: 2.5, z: 10, y: 1.25, width: 21, depth: 1 }, { phong: { color: 0x0000cc } }));
+        walls.push(instance.third.physics.add.box({ height: 2.5, z: -10, y: 1.25, width: 21, depth: 1 }, { phong: { color: 0x0000cc } }));
+        walls.push(instance.third.physics.add.box({ height: 2.5, x: 10, y: 1.25, width: 1, depth: 21 }, { phong: { color: 0x0000cc } }));
+        walls.push(instance.third.physics.add.box({ height: 2.5, x: -10, y: 1.25, width: 1, depth: 21 }, { phong: { color: 0x0000cc } }));
 
         walls.forEach(wall => {
             wall.body.setCollisionFlags(2);
         });
-        this.walls = walls;
+        instance.walls = walls;
         // add red dot
         // add player
-        this.player = this.third.physics.add.sphere({ z: -5 });
-        this.player.health = 100;
-        this.player.maxHealth = 100;
-        player = this.player;
+        instance.player = instance.third.physics.add.sphere({ z: -5 });
+        instance.player.health = 100;
+        instance.player.maxHealth = 100;
+        player = instance.player;
         /* this.player.body.on.collision((otherObject, event) => {
              if ((otherObject.name === "ground") && event === "collision") {
                  canJump = true;
              }
          });*/
-        this.player.body.setFriction(1);
+        instance.player.body.setFriction(1);
         loading.innerHTML = "Loading Weapon...";
-        this.third.load.fbx("samurai-sword.fbx").then(object => {
+        instance.third.load.fbx("samurai-sword.fbx").then(object => {
             loading.innerHTML = "Loading Enemy...";
-            this.sword = object;
-            this.sword.scale.set(0.0015, 0.0015, 0.0015);
-            this.sword.rotation.z = (-3 * (Math.PI / 2)) + Math.PI;
-            this.sword.rotation.x = Math.PI / 2;
-            this.sword.traverse(child => {
+            instance.sword = object;
+            instance.sword.scale.set(0.0015, 0.0015, 0.0015);
+            instance.sword.rotation.z = (-3 * (Math.PI / 2)) + Math.PI;
+            instance.sword.rotation.x = Math.PI / 2;
+            instance.sword.traverse(child => {
                 if (child.isMesh) {
                     child.castShadow = child.receiveShadow = true
                     if (child.material) child.material.metalness = 0
                 }
             })
-            this.third.add.existing(this.sword);
+            instance.third.add.existing(instance.sword);
         })
-        this.enemy = new ExtendedObject3D();
-        this.third.load.fbx('Breathing Idle.fbx').then(object => {
+        instance.enemy = new ExtendedObject3D();
+        instance.third.load.fbx('Breathing Idle.fbx').then(object => {
             //object.scale.set(0.0075, 0.0075, 0.0075);
-            this.enemy.add(object);
-            this.enemy.position.set(0, 1, 5);
-            this.enemy.scale.set(0.0075, 0.0075, 0.0075);
-            this.third.animationMixers.add(this.enemy.animation.mixer);
-            this.enemy.animation.add('Idle', object.animations[0]);
-            this.third.load.fbx("sg-sword.fbx").then(object => {
+            instance.enemy.add(object);
+            instance.enemy.position.set(0, 1, 5);
+            instance.enemy.scale.set(0.0075, 0.0075, 0.0075);
+            instance.third.animationMixers.add(instance.enemy.animation.mixer);
+            instance.enemy.animation.add('Idle', object.animations[0]);
+            instance.third.load.fbx("sg-sword.fbx").then(object => {
                 object.scale.set(0.03, 0.03, 0.03);
                 //this.third.add.existing(object);
-                this.enemy.traverse(child => {
+                instance.enemy.traverse(child => {
                     if (child.name === 'mixamorig6RightHand') {
                         //console.log("YAY")
                         //this.third.add.box({ width: 20, height: 20, depth: 20 })
@@ -120,10 +101,10 @@ class MainScene extends Scene3D {
                     }
                 })
             });
-            this.third.add.existing(this.enemy);
-            this.third.physics.add.existing(this.enemy, { shape: 'box', ignoreScale: true, offset: { y: -0.5 } });
-            objects.push(this.enemy);
-            this.enemy.loaded = true;
+            instance.third.add.existing(instance.enemy);
+            instance.third.physics.add.existing(instance.enemy, { shape: 'box', ignoreScale: true, offset: { y: -0.5 } });
+            objects.push(instance.enemy);
+            instance.enemy.loaded = true;
             //animations.slice(1).forEach(key => {
             /*this.third.load.fbx(`Warrior Running.fbx`).then(object => {
                 //console.log(JSON.stringify(object.animations[0]));
@@ -148,9 +129,9 @@ class MainScene extends Scene3D {
                     loading.innerHTML = `Loading Enemy Animations (${animsToLoad.indexOf(anim)}/${animsToLoad.length})...`;
                     const animText = await fetch(`warrior-${anim}.json`);
                     const animJson = await animText.json();
-                    this.enemy.animation.add(anim[0].toUpperCase(), THREE.AnimationClip.parse(animJson));
+                    instance.enemy.animation.add(anim[0].toUpperCase(), THREE.AnimationClip.parse(animJson));
                 }
-                this.enemyAI = new EnemyAI(this.enemy);
+                instance.enemyAI = new EnemyAI(instance.enemy);
                 loading.innerHTML = `Loaded!`;
                 setTimeout(() => {
                     loading.innerHTML = "";
@@ -161,21 +142,21 @@ class MainScene extends Scene3D {
             //this.third.physics.add.existing(object);
         });
         // add first person controls
-        this.firstPersonControls = new FirstPersonControls(this.third.camera, this.player, {})
+        instance.firstPersonControls = new FirstPersonControls(instance.third.camera, instance.player, {})
 
         // lock the pointer and update the first person control
-        this.input.on('pointerdown', () => {
-            if (this.player && this.player.health === 0) {
+        instance.input.on('pointerdown', () => {
+            if (instance.player && instance.player.health === 0) {
                 return;
             }
-            if (this.input.mousePointer.rightButtonDown() && cooldown < 10) {
+            if (instance.input.mousePointer.rightButtonDown() && cooldown < 10) {
                 blocking = true;
                 targetYRot = -Math.PI / 2;
                 targetXRot = -Math.PI / 2 + 0.8;
                 targetXOffset = 0.3;
-            } else if (this.keys.Alt.isDown && cooldown < 10 && !slashing) {
+            } else if (instance.keys.Alt.isDown && cooldown < 10 && !slashing) {
                 slashing = true;
-                this.handleSwing();
+                instance.handleSwing();
                 targetXOffset = -0.6;
                 targetYOffset = 0.6;
                 targetYRot = -Math.PI / 2;
@@ -184,28 +165,56 @@ class MainScene extends Scene3D {
                 targetXRot = -Math.PI / 2 + 0.175;
                 targetYRot = 0;
             }
-            this.input.mouse.requestPointerLock()
+            instance.input.mouse.requestPointerLock()
         })
-        this.input.on('pointermove', pointer => {
-            if (this.input.mouse.locked && this.player && this.player.health > 0) {
-                this.firstPersonControls.update(pointer.movementX, pointer.movementY)
+        instance.input.on('pointermove', pointer => {
+            if (instance.input.mouse.locked && instance.player && instance.player.health > 0) {
+                instance.firstPersonControls.update(pointer.movementX, pointer.movementY)
             }
         })
-        this.events.on('update', () => {
-            this.firstPersonControls.update(0, 0)
+        instance.events.on('update', () => {
+            instance.firstPersonControls.update(0, 0)
         })
 
         // add keys
-        this.keys = {
-            w: this.input.keyboard.addKey('w'),
-            a: this.input.keyboard.addKey('a'),
-            s: this.input.keyboard.addKey('s'),
-            d: this.input.keyboard.addKey('d'),
-            Alt: this.input.keyboard.addKey('Alt')
+        instance.keys = {
+            w: instance.input.keyboard.addKey('w'),
+            a: instance.input.keyboard.addKey('a'),
+            s: instance.input.keyboard.addKey('s'),
+            d: instance.input.keyboard.addKey('d'),
+            Alt: instance.input.keyboard.addKey('Alt')
         }
+    };
+    handleSwing() {
+        objects.forEach(object => {
+            const theta = Math.atan2(object.position.x - this.player.position.x, object.position.z - this.player.position.z);
+            const dist = Math.hypot(object.position.x - this.player.position.x, object.position.z - this.player.position.z);
+            const direction = new THREE.Vector3();
+            const rotation = this.third.camera.getWorldDirection(direction)
+            const cTheta = Math.atan2(rotation.x, rotation.z);
+            const angleDiff = cTheta - theta;
+            if (angleDiff < (slashing ? Math.PI / 4 : Math.PI / 6) && angleDiff > (slashing ? -Math.PI / 4 : 0) && dist < 3.5 && Math.abs(object.position.y - player.position.y) < 2 && !object.dead) {
+                object.body.setVelocity(object.body.velocity.x + 3 * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + 2.5, object.body.velocity.z + 3 * (1 + +slashing) * Math.cos(theta));
+                if (object.health) {
+                    object.health -= Math.floor(Math.random() * 5 + 3 + 3 * +slashing);
+                    object.health = Math.max(0, object.health);
+                }
+            }
+            // const cameraTheta = Math.atan2(this.third.camera.rotation.x, this.third.camera.rotation.z);
+            /*if (Math.abs(this.third.camera.position.angleTo(object.position)) < Math.PI / 4) {
+                object.body.setVelocity(3 * Math.sin(theta), 2, 3 * Math.cos(theta));
+            }*/
+        });
+    }
+    create() {
+        const self = this;
+        bootFunction = () => { MainScene.loadInstance(self) };
     }
 
     update(time, delta) {
+        if (!this.initiated) {
+            return;
+        }
         jumpCooldown -= 1;
         this.player.health = Math.max(this.player.health, 0);
         if (this.player.health === 0) {
@@ -387,4 +396,9 @@ const config = {
 
 window.addEventListener('load', () => {
     enable3d(() => new Phaser.Game(config)).withPhysics('./lib')
-})
+});
+document.getElementById("startGame").addEventListener("click", () => {
+    document.getElementById("menu").innerHTML = "";
+    loading.innerHTML = "Loading...";
+    bootFunction();
+});
