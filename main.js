@@ -122,9 +122,6 @@ class MainScene extends Scene3D {
                     })
                 });
             });*/
-            instance.third.load.fbx("Excited.fbx").then(object => {
-                console.log(JSON.stringify(object.animations[0].toJSON()))
-            });
             const animsToLoad = ["running", "slashing", "death", "celebrate"];
             (async() => {
                 loading.innerHTML = `Loading Enemy Animations (0/${animsToLoad.length})...`;
