@@ -14,6 +14,7 @@ let jumpCooldown = 0;
 let blocking = false;
 let slashing = false;
 let framesSinceDeath = 0;
+let sensitivity;
 let objects = [];
 let bootFunction;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -31,7 +32,7 @@ class MainScene extends Scene3D {
     }
     static loadInstance(instance) {
         instance.initiated = true;
-        instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 })
+        instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 });
         instance.third.warpSpeed('-orbitControls')
             //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
@@ -169,7 +170,7 @@ class MainScene extends Scene3D {
         })
         instance.input.on('pointermove', pointer => {
             if (instance.input.mouse.locked && instance.player && instance.player.health > 0) {
-                instance.firstPersonControls.update(pointer.movementX, pointer.movementY)
+                instance.firstPersonControls.update(pointer.movementX * sensitivity, pointer.movementY * sensitivity);
             }
         })
         instance.events.on('update', () => {
@@ -398,6 +399,7 @@ window.addEventListener('load', () => {
     enable3d(() => new Phaser.Game(config)).withPhysics('./lib')
 });
 document.getElementById("startGame").addEventListener("click", () => {
+    sensitivity = +document.getElementById("sensitivity").value;
     document.getElementById("menu").innerHTML = "";
     loading.innerHTML = "Loading...";
     bootFunction();
