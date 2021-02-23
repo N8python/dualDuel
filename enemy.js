@@ -85,4 +85,65 @@ class EnemyAI {
             this.enemy.animation.mixer._actions[2].setEffectiveWeight(1);*/
         }
     }
+    static loadEnemy(instance) {
+        instance.enemy = new ExtendedObject3D();
+        instance.third.load.fbx('melee-enemy').then(object => {
+            //object.scale.set(0.0075, 0.0075, 0.0075);
+            instance.enemy.add(object);
+            instance.enemy.position.set(0, 1, 5);
+            instance.enemy.scale.set(0.0075, 0.0075, 0.0075);
+            instance.third.animationMixers.add(instance.enemy.animation.mixer);
+            instance.enemy.animation.add('Idle', object.animations[0]);
+            instance.third.load.fbx("melee-sword").then(object => {
+                object.scale.set(0.03, 0.03, 0.03);
+                //this.third.add.existing(object);
+                instance.enemy.traverse(child => {
+                    if (child.name === 'mixamorig6RightHand') {
+                        //console.log("YAY")
+                        //this.third.add.box({ width: 20, height: 20, depth: 20 })
+                        child.add(object);
+                    }
+                })
+            });
+            instance.third.add.existing(instance.enemy);
+            instance.third.physics.add.existing(instance.enemy, { shape: 'box', ignoreScale: true, offset: { y: -0.5 } });
+            objects.push(instance.enemy);
+            instance.enemy.loaded = true;
+            //animations.slice(1).forEach(key => {
+            /*this.third.load.fbx(`Warrior Running.fbx`).then(object => {
+                //console.log(JSON.stringify(object.animations[0]));
+                this.enemy.animation.add("R", THREE.AnimationClip.parse(JSON.parse(JSON.stringify(object.animations[0].toJSON()))));
+                //this.enemy.animation.play('R');
+                //this.enemy.animation.mixer._actions[0].setEffectiveWeight(1);
+                //this.enemy.animation.mixer._actions[1].setEffectiveWeight(0);
+                this.third.load.fbx("Warrior Slash.fbx").then(object => {
+                    this.enemy.animation.add("S", object.animations[0]);
+                    //this.enemy.animation.play('S');
+                    //this.enemy.animation.mixer._actions[2].setEffectiveWeight(0);
+                    this.third.load.fbx("Warrior Death.fbx").then(object => {
+                        this.enemy.animation.add("D", object.animations[0]);
+                        this.enemyAI = new EnemyAI(this.enemy);
+                    })
+                });
+            });*/
+            const animsToLoad = ["running", "slashing", "death", "celebrate"];
+            (async() => {
+                loading.innerHTML = `Loading Enemy Animations (0/${animsToLoad.length})...`;
+                for (const anim of animsToLoad) {
+                    loading.innerHTML = `Loading Enemy Animations (${animsToLoad.indexOf(anim)}/${animsToLoad.length})...`;
+                    const animText = await fetch(`warrior-${anim}.json`);
+                    const animJson = await animText.json();
+                    instance.enemy.animation.add(anim[0].toUpperCase(), THREE.AnimationClip.parse(animJson));
+                }
+                instance.enemyAI = new EnemyAI(instance.enemy);
+                loading.innerHTML = `Loaded!`;
+                setTimeout(() => {
+                    loading.innerHTML = "";
+                })
+            })();
+            //})
+            //this.third.add.existing(object);
+            //this.third.physics.add.existing(object);
+        });
+    }
 }

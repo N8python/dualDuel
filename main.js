@@ -17,6 +17,8 @@ let framesSinceDeath = 0;
 let sensitivity;
 let objects = [];
 let bootFunction;
+let resetFunction;
+let mainScene;
 const healthBars = document.getElementById("healthBars").getContext("2d");
 const loading = document.getElementById("loading");
 const gameOverMessage = document.getElementById("gameOverMessage");
@@ -33,8 +35,10 @@ class MainScene extends Scene3D {
     static loadInstance(instance) {
         instance.initiated = true;
         instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 });
-        instance.third.warpSpeed('-orbitControls')
-            //this.third.haveSomeFun(50);
+        instance.third.warpSpeed('-orbitControls');
+        instance.third.load.preload("melee-enemy", 'Breathing Idle.fbx');
+        instance.third.load.preload("melee-sword", 'sg-sword.fbx');
+        //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
             objects.push(instance.third.physics.add.box({
                 x: 3.5,
@@ -83,65 +87,7 @@ class MainScene extends Scene3D {
             })
             instance.third.add.existing(instance.sword);
         })
-        instance.enemy = new ExtendedObject3D();
-        instance.third.load.fbx('Breathing Idle.fbx').then(object => {
-            //object.scale.set(0.0075, 0.0075, 0.0075);
-            instance.enemy.add(object);
-            instance.enemy.position.set(0, 1, 5);
-            instance.enemy.scale.set(0.0075, 0.0075, 0.0075);
-            instance.third.animationMixers.add(instance.enemy.animation.mixer);
-            instance.enemy.animation.add('Idle', object.animations[0]);
-            instance.third.load.fbx("sg-sword.fbx").then(object => {
-                object.scale.set(0.03, 0.03, 0.03);
-                //this.third.add.existing(object);
-                instance.enemy.traverse(child => {
-                    if (child.name === 'mixamorig6RightHand') {
-                        //console.log("YAY")
-                        //this.third.add.box({ width: 20, height: 20, depth: 20 })
-                        child.add(object);
-                    }
-                })
-            });
-            instance.third.add.existing(instance.enemy);
-            instance.third.physics.add.existing(instance.enemy, { shape: 'box', ignoreScale: true, offset: { y: -0.5 } });
-            objects.push(instance.enemy);
-            instance.enemy.loaded = true;
-            //animations.slice(1).forEach(key => {
-            /*this.third.load.fbx(`Warrior Running.fbx`).then(object => {
-                //console.log(JSON.stringify(object.animations[0]));
-                this.enemy.animation.add("R", THREE.AnimationClip.parse(JSON.parse(JSON.stringify(object.animations[0].toJSON()))));
-                //this.enemy.animation.play('R');
-                //this.enemy.animation.mixer._actions[0].setEffectiveWeight(1);
-                //this.enemy.animation.mixer._actions[1].setEffectiveWeight(0);
-                this.third.load.fbx("Warrior Slash.fbx").then(object => {
-                    this.enemy.animation.add("S", object.animations[0]);
-                    //this.enemy.animation.play('S');
-                    //this.enemy.animation.mixer._actions[2].setEffectiveWeight(0);
-                    this.third.load.fbx("Warrior Death.fbx").then(object => {
-                        this.enemy.animation.add("D", object.animations[0]);
-                        this.enemyAI = new EnemyAI(this.enemy);
-                    })
-                });
-            });*/
-            const animsToLoad = ["running", "slashing", "death", "celebrate"];
-            (async() => {
-                loading.innerHTML = `Loading Enemy Animations (0/${animsToLoad.length})...`;
-                for (const anim of animsToLoad) {
-                    loading.innerHTML = `Loading Enemy Animations (${animsToLoad.indexOf(anim)}/${animsToLoad.length})...`;
-                    const animText = await fetch(`warrior-${anim}.json`);
-                    const animJson = await animText.json();
-                    instance.enemy.animation.add(anim[0].toUpperCase(), THREE.AnimationClip.parse(animJson));
-                }
-                instance.enemyAI = new EnemyAI(instance.enemy);
-                loading.innerHTML = `Loaded!`;
-                setTimeout(() => {
-                    loading.innerHTML = "";
-                })
-            })();
-            //})
-            //this.third.add.existing(object);
-            //this.third.physics.add.existing(object);
-        });
+        EnemyAI.loadEnemy(instance);
         // add first person controls
         instance.firstPersonControls = new FirstPersonControls(instance.third.camera, instance.player, {})
 
@@ -185,7 +131,7 @@ class MainScene extends Scene3D {
             d: instance.input.keyboard.addKey('d'),
             Alt: instance.input.keyboard.addKey('Alt')
         }
-    };
+    }
     handleSwing() {
         objects.forEach(object => {
             const theta = Math.atan2(object.position.x - this.player.position.x, object.position.z - this.player.position.z);
@@ -208,10 +154,33 @@ class MainScene extends Scene3D {
         });
     }
     create() {
+        mainScene = this;
         const self = this;
         bootFunction = () => { MainScene.loadInstance(self) };
     }
-
+    reset() {
+        document.getElementById("gameOverMessage").innerHTML = "";
+        this.enemy.visible = false;
+        this.enemyAI = undefined;
+        this.third.physics.destroy(this.enemy);
+        objects.splice(objects.indexOf(this.enemy), 1);
+        this.player.body.setCollisionFlags(2);
+        this.player.health = this.player.maxHealth;
+        // set the new position
+        this.player.position.set(0, 0, -5);
+        this.player.body.needUpdate = true;
+        //this.player.rotateZ(Math.PI / 2);
+        this.player.body.once.update(() => {
+            this.player.body.setCollisionFlags(0);
+            // if you do not reset the velocity and angularVelocity, the object will keep it
+            this.player.body.setVelocity(0, 0, 0);
+            this.player.body.setAngularVelocity(0, 0, 0);
+        });
+        EnemyAI.loadEnemy(this);
+        // this.initiated = false;
+        //this.scene.restart();
+        //bootFunction();
+    }
     update(time, delta) {
         if (!this.initiated) {
             return;
