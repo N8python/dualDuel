@@ -39,8 +39,8 @@ class MainScene extends Scene3D {
         instance.hidden = false;
         instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 });
         instance.third.warpSpeed('-orbitControls');
-        instance.third.load.preload("melee-enemy", 'Breathing Idle.fbx');
-        instance.third.load.preload("melee-sword", 'sg-sword.fbx');
+        instance.third.load.preload("melee-enemy", './assets/enemies/meleeEnemy/model.fbx');
+        instance.third.load.preload("melee-sword", './assets/models/sg-sword.fbx');
         //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
             objects.push(instance.third.physics.add.box({
@@ -76,7 +76,7 @@ class MainScene extends Scene3D {
          });*/
         instance.player.body.setFriction(1);
         loading.innerHTML = "Loading Weapon...";
-        instance.third.load.fbx("samurai-sword.fbx").then(object => {
+        instance.third.load.fbx("./assets/models/samurai-sword.fbx").then(object => {
             loading.innerHTML = "Loading Enemy...";
             instance.sword = object;
             instance.sword.scale.set(0.0015, 0.0015, 0.0015);
@@ -90,7 +90,7 @@ class MainScene extends Scene3D {
             })
             instance.third.add.existing(instance.sword);
         })
-        EnemyAI.loadEnemy(instance);
+        MeleeEnemyAI.loadEnemy(instance);
         // add first person controls
         instance.firstPersonControls = new FirstPersonControls(instance.third.camera, instance.player, {})
 
@@ -185,7 +185,7 @@ class MainScene extends Scene3D {
             this.player.body.setVelocity(0, 0, 0);
             this.player.body.setAngularVelocity(0, 0, 0);
         });
-        EnemyAI.loadEnemy(this);
+        MeleeEnemyAI.loadEnemy(this);
         // this.initiated = false;
         //this.scene.restart();
         //bootFunction();
@@ -404,7 +404,7 @@ window.addEventListener('load', () => {
     bootFunction();
 });*/
 const levelSelect = () => {
-    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="levelselect.png">`;
+    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/levelselect.png">`;
     for (let i = 1; i <= 10; i++) {
         const button = document.createElement("button");
         button.classList.add("btn");
@@ -451,7 +451,7 @@ const levelSelect = () => {
     menu.appendChild(backButton);
 }
 const mainMenu = () => {
-    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="logo.gif">`;
+    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/logo.gif">`;
     const levelSelectButton = document.createElement("button");
     levelSelectButton.classList.add("btn");
     levelSelectButton.style.zIndex = 5;
