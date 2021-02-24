@@ -22,6 +22,8 @@ let mainScene;
 const healthBars = document.getElementById("healthBars").getContext("2d");
 const loading = document.getElementById("loading");
 const gameOverMessage = document.getElementById("gameOverMessage");
+const resetButton = document.getElementById("resetButton");
+const menu = document.getElementById("menu");
 
 function angleDifference(angle1, angle2) {
     const diff = ((angle2 - angle1 + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -34,6 +36,7 @@ class MainScene extends Scene3D {
     }
     static loadInstance(instance) {
         instance.initiated = true;
+        instance.hidden = false;
         instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 });
         instance.third.warpSpeed('-orbitControls');
         instance.third.load.preload("melee-enemy", 'Breathing Idle.fbx');
@@ -96,6 +99,9 @@ class MainScene extends Scene3D {
             if (instance.player && instance.player.health === 0) {
                 return;
             }
+            if (instance.hidden) {
+                return;
+            }
             if (instance.input.mousePointer.rightButtonDown() && cooldown < 10) {
                 blocking = true;
                 targetYRot = -Math.PI / 2;
@@ -156,14 +162,17 @@ class MainScene extends Scene3D {
     create() {
         mainScene = this;
         const self = this;
-        bootFunction = () => { MainScene.loadInstance(self) };
+        bootFunction = () => {
+            MainScene.loadInstance(self);
+        };
     }
     reset() {
+        framesSinceDeath = 0;
         document.getElementById("gameOverMessage").innerHTML = "";
-        this.enemy.visible = false;
+        /*this.enemy.visible = false;
         this.enemyAI = undefined;
         this.third.physics.destroy(this.enemy);
-        objects.splice(objects.indexOf(this.enemy), 1);
+        objects.splice(objects.indexOf(this.enemy), 1);*/
         this.player.body.setCollisionFlags(2);
         this.player.health = this.player.maxHealth;
         // set the new position
@@ -181,14 +190,35 @@ class MainScene extends Scene3D {
         //this.scene.restart();
         //bootFunction();
     }
+    removeEnemy() {
+        this.enemy.visible = false;
+        this.enemyAI = undefined;
+        this.third.physics.destroy(this.enemy);
+        this.third.scene.children.splice(this.third.scene.children.indexOf(this.enemy), 1);
+        objects.splice(objects.indexOf(this.enemy), 1);
+    }
+    hide() {
+        this.third.scene.children.forEach(child => {
+            child.visible = false;
+        });
+        this.hidden = true;
+    }
+    show() {
+        this.third.scene.children.forEach(child => {
+            child.visible = true;
+        });
+        this.hidden = false;
+    }
     update(time, delta) {
-        if (!this.initiated) {
+        if (!this.initiated || this.hidden) {
+            healthBars.clearRect(0, 0, 300, 300);
             return;
         }
         jumpCooldown -= 1;
         this.player.health = Math.max(this.player.health, 0);
         if (this.player.health === 0) {
             if (framesSinceDeath === 0) {
+                resetButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Died!"
             }
             framesSinceDeath++;
@@ -367,9 +397,80 @@ const config = {
 window.addEventListener('load', () => {
     enable3d(() => new Phaser.Game(config)).withPhysics('./lib')
 });
-document.getElementById("startGame").addEventListener("click", () => {
-    sensitivity = +document.getElementById("sensitivity").value;
+/*document.getElementById("startGame").addEventListener("click", () => {
+    sensitivity = 1;
     document.getElementById("menu").innerHTML = "";
     loading.innerHTML = "Loading...";
     bootFunction();
-});
+});*/
+const levelSelect = () => {
+    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="levelselect.png">`;
+    for (let i = 1; i <= 10; i++) {
+        const button = document.createElement("button");
+        button.classList.add("btn");
+        button.innerHTML = i;
+        button.style.zIndex = 5;
+        button.style.position = "absolute";
+        if (i < 6) {
+            button.style.top = `calc(25%)`;
+            button.style.left = `calc(50% + ${100 * i}px - 300px)`;
+        } else {
+            button.style.top = `calc(25% + 100px)`;
+            button.style.left = `calc(50% + ${100 * (i - 5)}px - 300px)`;
+        }
+        button.style.width = "75px";
+        button.style.transform = "translate(-50%, -50%)";
+        if (i > 1) {
+            button.setAttribute("disabled", "disabled");
+        }
+        button.onclick = () => {
+            sensitivity = 1;
+            document.getElementById("menu").innerHTML = "";
+            loading.innerHTML = "Loading...";
+            if (mainScene.hidden) {
+                mainScene.reset();
+                mainScene.show();
+            } else {
+                bootFunction();
+            }
+        }
+        menu.appendChild(button);
+    }
+    const backButton = document.createElement("button");
+    backButton.classList.add("btn");
+    backButton.zIndex = 5;
+    backButton.style.position = "absolute";
+    backButton.style.left = "50%";
+    backButton.style.top = "60%";
+    backButton.style.transform = "translate(-50%, -50%)";
+    backButton.innerHTML = "Back";
+    backButton.style.zIndex = 5;
+    backButton.onclick = () => {
+        mainMenu();
+    }
+    menu.appendChild(backButton);
+}
+const mainMenu = () => {
+    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="logo.gif">`;
+    const levelSelectButton = document.createElement("button");
+    levelSelectButton.classList.add("btn");
+    levelSelectButton.style.zIndex = 5;
+    levelSelectButton.style.position = "absolute";
+    levelSelectButton.style.left = "50%";
+    levelSelectButton.style.top = "20%";
+    levelSelectButton.style.transform = "translate(-50%, -50%)";
+    levelSelectButton.innerHTML = "Level Select";
+    levelSelectButton.onclick = () => {
+        levelSelect();
+    }
+    menu.appendChild(levelSelectButton);
+}
+mainMenu();
+resetButton.onclick = () => {
+    mainScene.removeEnemy();
+    mainScene.hide();
+    resetButton.style.display = "none";
+    menu.innerHTML = "";
+    gameOverMessage.innerHTML = "";
+    levelSelect();
+}

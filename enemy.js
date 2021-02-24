@@ -12,6 +12,7 @@ class EnemyAI {
         this.enemy.health = Math.max(this.enemy.health, 0);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
+                resetButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!"
                 this.enemy.dead = true;
                 this.enemy.animation.play("D", 120, false);
