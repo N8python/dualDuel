@@ -7,6 +7,7 @@ class EnemyAI {
         this.enemy.dead = false;
     }
     update(target, ground) {
+        this.enemy.body.transform();
         this.enemy.health = Math.max(this.enemy.health, 0);
     }
     stayUp(rigidity) {

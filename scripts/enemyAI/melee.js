@@ -5,6 +5,7 @@ class MeleeEnemyAI extends EnemyAI {
         this.enemy.cooldown = 0;
     }
     update(target, ground) {
+        //console.log(this.enemy.body.position);
         super.update(target, ground);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
@@ -49,6 +50,7 @@ class MeleeEnemyAI extends EnemyAI {
             this.moveYDir();
             this.stayUp(3);
         }
+        //return;
         if (Math.abs(target.position.y - this.enemy.position.y) > 8 || target.health === 0) {
             if (this.enemy.aggro) {
                 if (target.health === 0) {
@@ -78,9 +80,6 @@ class MeleeEnemyAI extends EnemyAI {
                     }
                 }
             }, 500);
-            /*this.enemy.animation.mixer._actions[0].setEffectiveWeight(0);
-            this.enemy.animation.mixer._actions[1].setEffectiveWeight(0);
-            this.enemy.animation.mixer._actions[2].setEffectiveWeight(1);*/
         }
     }
     static loadEnemy(instance) {

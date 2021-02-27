@@ -16,9 +16,15 @@ let slashing = false;
 let framesSinceDeath = 0;
 let sensitivity;
 let objects = [];
+let projectiles = [];
 let bootFunction;
 let resetFunction;
 let mainScene;
+let levelAIs = {
+    1: MeleeEnemyAI,
+    2: RangedEnemyAI
+}
+let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
 const loading = document.getElementById("loading");
 const gameOverMessage = document.getElementById("gameOverMessage");
@@ -28,6 +34,15 @@ const menu = document.getElementById("menu");
 function angleDifference(angle1, angle2) {
     const diff = ((angle2 - angle1 + Math.PI) % (Math.PI * 2)) - Math.PI;
     return (diff < -Math.PI) ? diff + (Math.PI * 2) : diff;
+}
+
+function futurePlayerPos(seconds) {
+    player.body.transform();
+    return {
+        x: player.position.x + player.body.velocity.x * seconds,
+        y: player.position.y + player.body.velocity.y * seconds,
+        z: player.position.z + player.body.velocity.z * seconds
+    }
 }
 class MainScene extends Scene3D {
     constructor() {
@@ -41,7 +56,10 @@ class MainScene extends Scene3D {
         instance.third.warpSpeed('-orbitControls');
         instance.third.load.preload("melee-enemy", './assets/enemies/meleeEnemy/model.fbx');
         instance.third.load.preload("melee-sword", './assets/models/sg-sword.fbx');
-        //this.third.haveSomeFun(50);
+        instance.third.load.preload("ranged-enemy", './assets/enemies/rangedEnemy/model.fbx');
+        instance.third.load.preload("ranged-bow", './assets/models/sg-bow.fbx');
+        instance.third.load.preload("arrow", "./assets/models/arrow.fbx")
+            //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
             objects.push(instance.third.physics.add.box({
                 x: 3.5,
@@ -90,7 +108,7 @@ class MainScene extends Scene3D {
             })
             instance.third.add.existing(instance.sword);
         })
-        MeleeEnemyAI.loadEnemy(instance);
+        levelAIs[currLevel].loadEnemy(instance);
         // add first person controls
         instance.firstPersonControls = new FirstPersonControls(instance.third.camera, instance.player, {})
 
@@ -185,7 +203,7 @@ class MainScene extends Scene3D {
             this.player.body.setVelocity(0, 0, 0);
             this.player.body.setAngularVelocity(0, 0, 0);
         });
-        MeleeEnemyAI.loadEnemy(this);
+        levelAIs[currLevel].loadEnemy(this);
         // this.initiated = false;
         //this.scene.restart();
         //bootFunction();
@@ -196,6 +214,15 @@ class MainScene extends Scene3D {
         this.third.physics.destroy(this.enemy);
         this.third.scene.children.splice(this.third.scene.children.indexOf(this.enemy), 1);
         objects.splice(objects.indexOf(this.enemy), 1);
+        for (let i = 0; i < 10; i++) {
+            projectiles.forEach(projectile => {
+                projectile.body.visible = false;
+                this.third.physics.destroy(projectile.body);
+                this.third.scene.children.splice(this.third.scene.children.indexOf(projectile.body), 1);
+                objects.splice(objects.indexOf(projectile.body), 1);
+                projectiles.splice(projectiles.indexOf(projectile), 1);
+            });
+        }
     }
     hide() {
         this.third.scene.children.forEach(child => {
@@ -240,9 +267,13 @@ class MainScene extends Scene3D {
         if (loading.innerHTML !== "") {
             return;
         }
+        this.player.body.transform();
         if (this.enemyAI) {
             this.enemyAI.update(player, this.third.scene.children.find(x => x.name === "ground"));
         }
+        projectiles.forEach(projectile => {
+            projectile.update();
+        })
         const block = this.input.mousePointer.rightButtonDown();
         if (!block) {
             blocking = false;
@@ -420,11 +451,12 @@ const levelSelect = () => {
         }
         button.style.width = "75px";
         button.style.transform = "translate(-50%, -50%)";
-        if (i > 1) {
+        if (i > 2) {
             button.setAttribute("disabled", "disabled");
         }
         button.onclick = () => {
             sensitivity = 1;
+            currLevel = i;
             document.getElementById("menu").innerHTML = "";
             loading.innerHTML = "Loading...";
             if (mainScene.hidden) {
