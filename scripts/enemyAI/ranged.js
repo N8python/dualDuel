@@ -39,6 +39,9 @@ class RangedEnemyAI extends EnemyAI {
                 this.enemy.animation.play("Death", 120, false);
             }
         }
+        if (this.enemy.dead) {
+            return;
+        }
         this.enemy.cooldown--;
         if (this.enemy.cooldown === 0) {
             if (this.enemy.aggro && target.health > 0) {
@@ -105,6 +108,17 @@ class RangedEnemyAI extends EnemyAI {
                     });
                 }
             }
+        }
+        if (Math.abs(target.position.y - this.enemy.position.y) > 8 || target.health === 0) {
+            if (this.enemy.aggro) {
+                if (target.health === 0) {
+                    this.enemy.animation.play("Celebrate");
+                } else {
+                    this.enemy.animation.play("Idle");
+                }
+            }
+            this.enemy.aggro = false;
+            this.enemy.attacking = false;
         }
         if (this.enemy && this.enemy.body && this.enemy.position.distanceTo(target.position) < 2 && this.enemy.cooldown < 0 && target.health > 0) {
             this.stayUp(1);

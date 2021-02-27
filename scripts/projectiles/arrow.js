@@ -42,6 +42,8 @@ class Arrow {
                 targetCooldown = 100;
             } else {
                 player.health -= 5 + Math.random() * 8;
+                this.arrow.body.transform();
+                player.body.setVelocity(player.body.velocity.x + 4 * Math.sin(this.arrow.body.rotation.y), player.body.velocity.y + 3, player.body.velocity.z + 4 * Math.cos(this.arrow.body.rotation.y));
             }
         }
     }
