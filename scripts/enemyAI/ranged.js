@@ -23,6 +23,7 @@ class RangedEnemyAI extends EnemyAI {
                     target: player,
                     pool: false
                 }));
+                this.enemy.arrow.visible = false;
                 //new Arrow(mainScene, this.enemy.arrowModel, this.enemy.position.x, this.enemy.position.y, this.enemy.position.z)
             }
         })
@@ -56,6 +57,9 @@ class RangedEnemyAI extends EnemyAI {
         if (this.enemy.dead) {
             return;
         }
+        if (this.enemy.bow) {
+            this.enemy.bow.scale.set(0.055, 0.055, 0.055);
+        }
         if ((this.enemy.position.distanceTo(target.position) < 7.5 || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
             if (!this.enemy.aggro) {
                 this.enemy.animation.play("Running");
@@ -67,6 +71,9 @@ class RangedEnemyAI extends EnemyAI {
                 this.rotateTowards(futurePos.x, futurePos.z);
                 this.stayUp(1);
                 this.enemy.arrowTick++;
+                if (this.enemy.bow) {
+                    this.enemy.bow.scale.set(0.055, 0.055, 0.055 + this.enemy.arrowTick / 1500);
+                }
                 /*if (this.enemy.arrowTick > 150) {
                     this.enemy.arrowTick = 0;
                     this.enemy.animation.play("Idle");
@@ -99,6 +106,7 @@ class RangedEnemyAI extends EnemyAI {
                 }
                 this.stayUp(1);
                 if (Math.random() < 0.05) {
+                    this.enemy.arrow.visible = true;
                     this.enemy.aggroState = "shootArrow";
                     this.enemy.animation.play("Shoot");
                     this.enemy.animation.mixer._actions.forEach(x => {
@@ -158,11 +166,23 @@ class RangedEnemyAI extends EnemyAI {
                         //console.log("YAY")
                         //this.third.add.box({ width: 20, height: 20, depth: 20 })
                         child.add(object);
+                        instance.enemy.bow = object;
                     }
                 })
             });
             instance.third.load.fbx("arrow").then(object => {
                 instance.enemy.arrowModel = object;
+                instance.enemy.traverse(child => {
+                    if (child.name === 'mixamorig8RightHand') {
+                        //console.log("YAY")
+                        //this.third.add.box({ width: 20, height: 20, depth: 20 })
+                        const arrowModel = instance.enemy.arrowModel.clone();
+                        arrowModel.scale.set(15, 6, 6);
+                        instance.enemy.arrow = arrowModel;
+                        arrowModel.visible = false;
+                        child.add(arrowModel);
+                    }
+                });
             })
             instance.third.add.existing(instance.enemy);
             instance.third.physics.add.existing(instance.enemy, { shape: 'box', ignoreScale: true, offset: { y: -0.5 } });
