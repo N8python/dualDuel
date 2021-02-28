@@ -24,6 +24,7 @@ class RangedEnemyAI extends EnemyAI {
                     pool: false
                 }));
                 this.enemy.arrow.visible = false;
+                this.enemy.bowArrow.visible = false;
                 //new Arrow(mainScene, this.enemy.arrowModel, this.enemy.position.x, this.enemy.position.y, this.enemy.position.z)
             }
         })
@@ -59,6 +60,8 @@ class RangedEnemyAI extends EnemyAI {
         }
         if (this.enemy.bow) {
             this.enemy.bow.scale.set(0.055, 0.055, 0.055);
+            this.enemy.bowArrow.visible = false;
+            this.enemy.arrow.visible = false;
         }
         if ((this.enemy.position.distanceTo(target.position) < 7.5 || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
             if (!this.enemy.aggro) {
@@ -73,6 +76,14 @@ class RangedEnemyAI extends EnemyAI {
                 this.enemy.arrowTick++;
                 if (this.enemy.bow) {
                     this.enemy.bow.scale.set(0.055, 0.055, 0.055 + this.enemy.arrowTick / 1500);
+                }
+
+                if (this.enemy.arrowTick > 50) {
+                    this.enemy.arrow.visible = false;
+                    this.enemy.bowArrow.visible = true;
+                } else if (this.enemy.arrowTick > 20) {
+                    this.enemy.arrow.visible = true;
+                    this.enemy.bowArrow.visible = false;
                 }
                 /*if (this.enemy.arrowTick > 150) {
                     this.enemy.arrowTick = 0;
@@ -106,7 +117,7 @@ class RangedEnemyAI extends EnemyAI {
                 }
                 this.stayUp(1);
                 if (Math.random() < 0.05) {
-                    this.enemy.arrow.visible = true;
+                    //this.enemy.arrow.visible = true;
                     this.enemy.aggroState = "shootArrow";
                     this.enemy.animation.play("Shoot");
                     this.enemy.animation.mixer._actions.forEach(x => {
@@ -167,6 +178,12 @@ class RangedEnemyAI extends EnemyAI {
                         //this.third.add.box({ width: 20, height: 20, depth: 20 })
                         child.add(object);
                         instance.enemy.bow = object;
+                        instance.third.load.fbx("arrow").then(arrow => {
+                            arrow.scale.set(15, 6, 6);
+                            arrow.rotation.z = 3 * Math.PI / 2;
+                            child.add(arrow);
+                            instance.enemy.bowArrow = arrow;
+                        });
                     }
                 })
             });
@@ -181,6 +198,15 @@ class RangedEnemyAI extends EnemyAI {
                         instance.enemy.arrow = arrowModel;
                         arrowModel.visible = false;
                         child.add(arrowModel);
+                    }
+                });
+            });
+            instance.third.load.fbx("quiver").then(object => {
+                object.scale.set(15, 15, 15);
+                object.position.z = -12.5;
+                instance.enemy.traverse(child => {
+                    if (child.name === "mixamorig8Spine") {
+                        child.add(object);
                     }
                 });
             })
