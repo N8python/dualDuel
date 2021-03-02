@@ -14,8 +14,8 @@ class EnemyAI {
         this.enemy.body.setAngularVelocityX(-this.enemy.body.rotation.x / rigidity);
         this.enemy.body.setAngularVelocityZ(-this.enemy.body.rotation.z / rigidity);
     }
-    rotateTowards(x, z, mag = 4) {
-        const theta = Math.atan2(x - this.enemy.position.x, z - this.enemy.position.z);
+    rotateTowards(x, z, mag = 4, offset = 0) {
+        const theta = Math.atan2(x - this.enemy.position.x, z - this.enemy.position.z) + offset;
         this.enemy.body.setAngularVelocityY(-angleDifference(theta, this.enemy.body.rotation.y) * mag);
     }
     moveYDir(mag = 0.15, friction = 0.975) {

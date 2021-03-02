@@ -22,7 +22,7 @@ class Arrow {
         setTimeout(() => {
             this.arrow.body.transform();
             this.arrow.body.setFriction(1);
-            this.arrow.body.setVelocity(10 * Math.sin(angle), this.arrow.body.velocity.y + this.arrow.position.distanceTo(target.position) * 0.325, 10 * Math.cos(angle));
+            this.arrow.body.setVelocity(10 * Math.sin(angle), this.arrow.body.velocity.y + this.arrow.position.distanceTo(target.position) * 0.325 + 0.35, 10 * Math.cos(angle));
         });
         if (pool) {
             arrowPool.push(this);

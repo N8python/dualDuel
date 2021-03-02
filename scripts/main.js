@@ -22,7 +22,8 @@ let resetFunction;
 let mainScene;
 let levelAIs = {
     1: MeleeEnemyAI,
-    2: RangedEnemyAI
+    2: RangedEnemyAI,
+    3: KnightEnemyAI
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -53,14 +54,26 @@ class MainScene extends Scene3D {
         instance.initiated = true;
         instance.hidden = false;
         instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 });
-        instance.third.warpSpeed('-orbitControls');
+        instance.third.warpSpeed('-orbitControls').then(({ ground }) => {
+            instance.third.load.texture('metal').then(texture => {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(32, 32);
+                ground.material = new THREE.MeshPhongMaterial({ map: texture, opacity: 0.5, transparent: true, color: 0x666666 })
+            })
+        })
         instance.third.load.preload("melee-enemy", './assets/enemies/meleeEnemy/model.fbx');
         instance.third.load.preload("melee-sword", './assets/models/sg-sword.fbx');
         instance.third.load.preload("ranged-enemy", './assets/enemies/rangedEnemy/model.fbx');
         instance.third.load.preload("ranged-bow", './assets/models/sg-bow.fbx');
         instance.third.load.preload("arrow", "./assets/models/arrow.fbx");
-        instance.third.load.preload("quiver", "./assets/models/sg-quiver.fbx")
-            //this.third.haveSomeFun(50);
+        instance.third.load.preload("quiver", "./assets/models/sg-quiver.fbx");
+        instance.third.load.preload("knight-enemy", './assets/enemies/knightEnemy/model.fbx');
+        instance.third.load.preload("knight-sword", '/assets/models/knight-sword.fbx');
+        instance.third.load.preload("shield", '/assets/models/shield.fbx');
+        instance.third.load.preload('metal', '/assets/images/metal.png');
+
+        //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
             objects.push(instance.third.physics.add.box({
                 x: 3.5,
@@ -96,6 +109,8 @@ class MainScene extends Scene3D {
         instance.player.body.setFriction(1);
         loading.innerHTML = "Loading Weapon...";
         instance.third.load.fbx("./assets/models/samurai-sword.fbx").then(object => {
+            object.receiveShadow = true;
+            object.castShadow = true;
             loading.innerHTML = "Loading Enemy...";
             instance.sword = object;
             instance.sword.scale.set(0.0015, 0.0015, 0.0015);
@@ -108,8 +123,9 @@ class MainScene extends Scene3D {
                 }
             })
             instance.third.add.existing(instance.sword);
-        })
-        levelAIs[currLevel].loadEnemy(instance);
+            levelAIs[currLevel].loadEnemy(instance);
+        });
+
         // add first person controls
         instance.firstPersonControls = new FirstPersonControls(instance.third.camera, instance.player, {})
 
@@ -166,8 +182,37 @@ class MainScene extends Scene3D {
             const cTheta = Math.atan2(rotation.x, rotation.z);
             const angleDiff = cTheta - theta;
             if (angleDiff < (slashing ? Math.PI / 4 : Math.PI / 6) && angleDiff > (slashing ? -Math.PI / 4 : 0) && dist < 3.5 && Math.abs(object.position.y - player.position.y) < 2 && !object.dead) {
-                object.body.setVelocity(object.body.velocity.x + 3 * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + 2.5, object.body.velocity.z + 3 * (1 + +slashing) * Math.cos(theta));
-                if (object.health) {
+                let blocked = false;
+                if (object.aggroState && object.strafeCounter !== undefined) {
+                    if (slashing) {
+                        if (Math.random() < 0.33) {
+                            object.animation.play("Block");
+                            blocked = true;
+                        }
+                    } else {
+                        if (Math.random() < 0.2) {
+                            object.animation.play("Block");
+                            blocked = true;
+                        }
+                    }
+                    if (blocked === true) {
+                        setTimeout(() => {
+                            targetXRot = 0.5;
+                        }, 0);
+                    }
+                    if (Math.random() < 0.25 && !blocked) {
+                        object.aggroState = "flee";
+                    }
+                    if (object.health < 30 && !blocked) {
+                        if (Math.random() < 0.25) {
+                            object.aggroState = "flee";
+                        }
+                    }
+                }
+                if (!blocked) {
+                    object.body.setVelocity(object.body.velocity.x + 3 * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + 2.5, object.body.velocity.z + 3 * (1 + +slashing) * Math.cos(theta));
+                }
+                if (object.health && !blocked) {
                     object.health -= Math.floor(Math.random() * 5 + 3 + 3 * +slashing);
                     object.health = Math.max(0, object.health);
                 }
@@ -238,7 +283,7 @@ class MainScene extends Scene3D {
         this.hidden = false;
     }
     update(time, delta) {
-        if (!this.initiated || this.hidden) {
+        if (!this.initiated || this.hidden || !this.enemy) {
             healthBars.clearRect(0, 0, 300, 300);
             return;
         }
@@ -318,6 +363,7 @@ class MainScene extends Scene3D {
             this.bob.z = Math.sin(time * 0.003) * 0.0075;
         }
         this.third.camera.position.y += this.bob.y * 1.75;
+        this.third.camera.position.y -= 0;
         if (this.player.health === 0) {
             this.third.camera.rotateZ(Math.PI / 2 * Math.min(framesSinceDeath / 60, 1));
         }
@@ -325,7 +371,7 @@ class MainScene extends Scene3D {
             // adjust the position of the rifle to the camera
             const raycaster = new THREE.Raycaster();
             // x and y are normalized device coordinates from -1 to +1
-            raycaster.setFromCamera({ x: currXOffset - this.bob.x, y: -currYOffset - this.bob.y - (cooldown / 100) - (framesSinceDeath / 60) }, this.third.camera);
+            raycaster.setFromCamera({ x: currXOffset - this.bob.x, y: -currYOffset - this.bob.y - (cooldown / 100) - (framesSinceDeath / 60) - 0 }, this.third.camera);
             const pos = new THREE.Vector3();
             pos.copy(raycaster.ray.direction);
             pos.multiplyScalar(1.2 + this.bob.z);
@@ -452,7 +498,7 @@ const levelSelect = () => {
         }
         button.style.width = "75px";
         button.style.transform = "translate(-50%, -50%)";
-        if (i > 2) {
+        if (i > 3) {
             button.setAttribute("disabled", "disabled");
         }
         button.onclick = () => {

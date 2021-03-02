@@ -16,9 +16,9 @@ class RangedEnemyAI extends EnemyAI {
                 projectiles.push(new Arrow({
                     scene: mainScene,
                     model: mainScene.enemy.arrowModel,
-                    x: this.enemy.position.x + 0.5 * Math.sin(this.enemy.body.rotation.y),
-                    y: this.enemy.position.y + 1,
-                    z: this.enemy.position.z + 0.5 * Math.cos(this.enemy.body.rotation.y),
+                    x: this.enemy.position.x + 1 * Math.sin(this.enemy.body.rotation.y),
+                    y: this.enemy.position.y + 0.8,
+                    z: this.enemy.position.z + 1 * Math.cos(this.enemy.body.rotation.y),
                     angle: this.enemy.body.rotation.y,
                     target: player,
                     pool: false
