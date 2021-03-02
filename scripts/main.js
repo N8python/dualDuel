@@ -69,9 +69,9 @@ class MainScene extends Scene3D {
         instance.third.load.preload("arrow", "./assets/models/arrow.fbx");
         instance.third.load.preload("quiver", "./assets/models/sg-quiver.fbx");
         instance.third.load.preload("knight-enemy", './assets/enemies/knightEnemy/model.fbx');
-        instance.third.load.preload("knight-sword", '/assets/models/knight-sword.fbx');
-        instance.third.load.preload("shield", '/assets/models/shield.fbx');
-        instance.third.load.preload('metal', '/assets/images/metal.png');
+        instance.third.load.preload("knight-sword", './assets/models/knight-sword.fbx');
+        instance.third.load.preload("shield", './assets/models/shield.fbx');
+        instance.third.load.preload('metal', './assets/images/metal.png');
 
         //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
