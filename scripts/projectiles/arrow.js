@@ -41,7 +41,7 @@ class Arrow {
                 this.arrow.body.setVelocity(this.arrow.body.velocity.x * -0.6, this.arrow.body.velocity.y, this.arrow.body.velocity.z * -0.6);
                 targetCooldown = 100;
             } else {
-                player.health -= 5 + Math.random() * 8;
+                playerTakeDamage(5 + Math.random() * 8, "ranged");
                 this.arrow.body.transform();
                 player.body.setVelocity(player.body.velocity.x + 4 * Math.sin(this.arrow.body.rotation.y), player.body.velocity.y + 3, player.body.velocity.z + 4 * Math.cos(this.arrow.body.rotation.y));
             }

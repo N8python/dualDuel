@@ -54,6 +54,27 @@ function futurePlayerPos(seconds) {
         z: player.position.z + player.body.velocity.z * seconds
     }
 }
+
+function playerTakeDamage(damage, type) {
+    if (localProxy.playerHat === "knightsHelmet") {
+        if (Math.random() < 0.25) {
+            damage = 0;
+        }
+        if (type === "ranged" && Math.random() < 0.25) {
+            damage *= 2;
+        }
+    }
+    let reduction;
+    if (localProxy.playerArmor !== "none") {
+        reduction = (items.armor[localProxy.playerArmor].stats.damageReduction * items.armor[localProxy.playerArmor].stats.multiplier(type)) - (items.armor[localProxy.playerArmor].stats.damageReduction2 * damage);
+    } else {
+        reduction = 0;
+    }
+    player.health -= damage * (1 - reduction);
+    if (items.armor[localProxy.playerArmor].stats.spikes && type === "melee") {
+        mainScene.enemy.health -= items.armor[localProxy.playerArmor].stats.spikes();
+    }
+}
 class MainScene extends Scene3D {
     constructor() {
         super({ key: 'MainScene' })
@@ -109,6 +130,15 @@ class MainScene extends Scene3D {
         instance.player = instance.third.physics.add.sphere({ z: -5 });
         instance.player.health = 100;
         instance.player.maxHealth = 100;
+        if (localProxy.playerHat === "featheredCap") {
+            instance.player.health *= 0.75;
+            instance.player.maxHealth *= 0.75;
+        }
+        if (localProxy.playerHat === "umbrella") {
+            instance.player.health *= 0.65;
+            instance.player.maxHealth *= 0.65;
+            instance.player.body.setGravity(0, -9.81 * 0.5, 0)
+        }
         player = instance.player;
         /* this.player.body.on.collision((otherObject, event) => {
              if ((otherObject.name === "ground") && event === "collision") {
@@ -166,7 +196,14 @@ class MainScene extends Scene3D {
         })
         instance.input.on('pointermove', pointer => {
             if (instance.input.mouse.locked && instance.player && instance.player.health > 0) {
-                instance.firstPersonControls.update(pointer.movementX * sensitivity, pointer.movementY * sensitivity);
+                let multiplier = 1;
+                if (items.armor[localProxy.playerArmor].stats.sensitivityDebuff) {
+                    multiplier -= items.armor[localProxy.playerArmor].stats.sensitivityDebuff;
+                }
+                if (localProxy.playerHat === "scoutsCap") {
+                    multiplier += 0.25;
+                }
+                instance.firstPersonControls.update(pointer.movementX * sensitivity * multiplier, pointer.movementY * sensitivity * multiplier);
             }
         })
         instance.events.on('update', () => {
@@ -438,6 +475,15 @@ class MainScene extends Scene3D {
         if (player.health === 0) {
             speed = 0;
         }
+        if (localProxy.playerArmor !== "none") {
+            speed *= (1 - items.armor[localProxy.playerArmor].stats.speedDebuff);
+        }
+        if (localProxy.playerHat === "scoutsCap") {
+            speed *= 1.25;
+        }
+        if (localProxy.playerHat === "featheredCap") {
+            speed *= 1.5;
+        }
         if (this.keys.w.isDown) {
             velocityUpdate[0] += Math.sin(theta) * speed;
             velocityUpdate[2] += Math.cos(theta) * speed;
@@ -462,6 +508,9 @@ document.onkeydown = (e) => {
         const oldVelocity = player.body.velocity;
         const velocityUpdate = [oldVelocity.x, oldVelocity.y, oldVelocity.z];
         velocityUpdate[1] += 5;
+        if (localProxy.playerHat === "featheredCap" || localProxy.playerHat === "umbrella") {
+            velocityUpdate[1] *= 1.25;
+        }
         player.body.setVelocity(...velocityUpdate);
         jumpCooldown = 15;
         canJump = false;
@@ -631,6 +680,19 @@ const shop = () => {
                 selectButton.onclick = () => {
                     localProxy["player" + category[0].toUpperCase() + category.slice(1, category.endsWith("s") ? category.length - 1 : category.length)] = item;
                     display.src = `assets/images/items/${category}/${items[category][item].image}`;
+                    if (mainScene.player) {
+                        if (localProxy.playerHat === "featheredCap") {
+                            mainScene.player.health = 75;
+                            mainScene.player.maxHealth = 75;
+                        } else if (localProxy.playerHat === "umbrella") {
+                            mainScene.player.health = 65;
+                            mainScene.player.maxHealth = 65;
+                            mainScene.player.body.setGravity(0, -9.81 * 0.5, 0)
+                        } else {
+                            mainScene.player.health = 100;
+                            mainScene.player.maxHealth = 100;
+                        }
+                    }
                 }
             })
         }

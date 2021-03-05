@@ -153,7 +153,7 @@ class RangedEnemyAI extends EnemyAI {
                     } else {
                         target.body.setVelocity(target.body.velocity.x + 5 * Math.sin(this.enemy.body.rotation.y), target.body.velocity.y + 4, target.body.velocity.z + 5 * Math.cos(this.enemy.body.rotation.y));
                         if (target.health) {
-                            target.health -= Math.floor(Math.random() * 3 + 3);
+                            playerTakeDamage(Math.floor(Math.random() * 3 + 3), "melee");
                         }
                     }
                 }
