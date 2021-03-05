@@ -31,6 +31,15 @@ const loading = document.getElementById("loading");
 const gameOverMessage = document.getElementById("gameOverMessage");
 const resetButton = document.getElementById("resetButton");
 const menu = document.getElementById("menu");
+if (!localProxy.playerArmor) {
+    localProxy.playerArmor = "none";
+}
+if (!localProxy.playerHat) {
+    localProxy.playerHat = "none";
+}
+if (!localProxy.playerItem) {
+    localProxy.playerItem = "sword";
+}
 
 function angleDifference(angle1, angle2) {
     const diff = ((angle2 - angle1 + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -529,6 +538,126 @@ const levelSelect = () => {
     }
     menu.appendChild(backButton);
 }
+const shop = () => {
+    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/shop.png">`;
+    const armorDisplay = document.createElement("div");
+    armorDisplay.style.width = "186px";
+    armorDisplay.style.height = "400px";
+    armorDisplay.style.position = "absolute";
+    armorDisplay.style.zIndex = 5;
+    armorDisplay.style.border = "4px solid black";
+    armorDisplay.style.top = "45%";
+    armorDisplay.style.left = "25%";
+    armorDisplay.style.transform = "translate(-50%, -50%)";
+    armorDisplay.innerHTML = `<h1 style="margin-left:8px;margin-top:0px;margin-bottom:0px;">Armor:</h1>`;
+    const armorImage = document.createElement("img");
+    armorImage.style.width = "186px";
+    armorImage.style.height = "350px";
+    if (localProxy.playerArmor !== "none") {
+        armorImage.src = `assets/images/items/armor/${items.armor[localProxy.playerArmor].image}`;
+    }
+    armorDisplay.appendChild(armorImage);
+    const hatDisplay = document.createElement("div");
+    hatDisplay.style.width = "186px";
+    hatDisplay.style.height = "200px";
+    hatDisplay.style.position = "absolute";
+    hatDisplay.style.zIndex = 5;
+    hatDisplay.style.border = "4px solid black";
+    hatDisplay.style.top = "calc(45% - 100px)";
+    hatDisplay.style.left = "calc(25% + 190px)";
+    hatDisplay.style.transform = "translate(-50%, -50%)";
+    hatDisplay.innerHTML = `<h1 style="margin-left:8px;margin-top:0px;margin-bottom:0px;">Hat:</h1>`;
+    const hatImage = document.createElement("img");
+    hatImage.style.width = "186px";
+    hatImage.style.height = "150px";
+    if (localProxy.playerHat !== "none") {
+        hatImage.src = `assets/images/items/hats/${items.hats[localProxy.playerHat].image}`;
+    }
+    hatDisplay.appendChild(hatImage);
+    const itemDisplay = document.createElement("div");
+    itemDisplay.style.width = "186px";
+    itemDisplay.style.height = "200px";
+    itemDisplay.style.position = "absolute";
+    itemDisplay.style.zIndex = 5;
+    itemDisplay.style.border = "4px solid black";
+    itemDisplay.style.borderTop = "0px solid black";
+    itemDisplay.style.top = "calc(45% + 102px)";
+    itemDisplay.style.left = "calc(25% + 190px)";
+    itemDisplay.style.transform = "translate(-50%, -50%)";
+    itemDisplay.innerHTML = `<h1 style="margin-left:8px;margin-top:0px;margin-bottom:0px;">Item:</h1>`;
+    const itemImage = document.createElement("img");
+    itemImage.style.width = "186px";
+    itemImage.style.height = "150px";
+    if (localProxy.playerItem !== "none") {
+        itemImage.src = `assets/images/items/items/${items.items[localProxy.playerItem].image}`;
+    }
+    itemDisplay.appendChild(itemImage);
+    const storeSelect = document.createElement("div");
+    storeSelect.style.width = "500px";
+    storeSelect.style.height = "400px";
+    storeSelect.style.position = "absolute";
+    storeSelect.style.zIndex = 5;
+    storeSelect.style.top = "45%";
+    storeSelect.style.left = "calc(25% + 3 * 186px + 28px - 50px)";
+    storeSelect.style.border = "4px solid black";
+    storeSelect.style.transform = "translate(-50%, -50%)";
+    const categories = ["armor", "hats", "items"];
+    const displays = [armorImage, hatImage, itemImage]
+    categories.forEach((category, ii) => {
+        const display = displays[ii];
+        const categoryButton = document.createElement("button");
+        categoryButton.innerHTML = category[0].toUpperCase() + category.slice(1);
+        storeSelect.appendChild(categoryButton);
+        categoryButton.classList.add("menu-btn");
+        categoryButton.onclick = () => {
+            storeContent.innerHTML = "";
+            Object.keys(items[category]).forEach((item, i) => {
+                const itemDiv = document.createElement("div")
+                itemDiv.innerHTML = `<h3>${items[category][item].title}</h3><p>${items[category][item].description}</p>`;
+                itemDiv.style.padding = "8px";
+                itemDiv.style.border = "2px solid black";
+                if (i === Object.keys(items[category]).length - 1) {
+                    itemDiv.style.borderBottom = "4px solid black";
+                }
+                const selectButton = document.createElement("button");
+                selectButton.innerHTML = "Select";
+                selectButton.style.float = "right";
+                selectButton.style.fontSize = "16px";
+                selectButton.style.width = "100px";
+                selectButton.style.padding = "8px";
+                selectButton.classList.add("btn");
+                storeContent.appendChild(selectButton);
+                storeContent.appendChild(itemDiv);
+                selectButton.onclick = () => {
+                    localProxy["player" + category[0].toUpperCase() + category.slice(1, category.endsWith("s") ? category.length - 1 : category.length)] = item;
+                    display.src = `assets/images/items/${category}/${items[category][item].image}`;
+                }
+            })
+        }
+    });
+    const storeContent = document.createElement("div");
+    storeContent.style.borderTop = "4px solid black";
+    storeContent.style.height = "88%";
+    storeContent.style.overflowY = "scroll";
+    storeSelect.appendChild(storeContent);
+    const backButton = document.createElement("button");
+    backButton.classList.add("btn");
+    backButton.zIndex = 5;
+    backButton.style.position = "absolute";
+    backButton.style.left = "50%";
+    backButton.style.top = "80%";
+    backButton.style.transform = "translate(-50%, -50%)";
+    backButton.innerHTML = "Back";
+    backButton.style.zIndex = 5;
+    backButton.onclick = () => {
+        mainMenu();
+    }
+    menu.appendChild(storeSelect);
+    menu.appendChild(armorDisplay);
+    menu.appendChild(hatDisplay);
+    menu.appendChild(itemDisplay);
+    menu.appendChild(backButton);
+}
 const mainMenu = () => {
     menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/logo.gif">`;
     const levelSelectButton = document.createElement("button");
@@ -542,7 +671,19 @@ const mainMenu = () => {
     levelSelectButton.onclick = () => {
         levelSelect();
     }
+    const shopButton = document.createElement("button");
+    shopButton.classList.add("btn");
+    shopButton.style.zIndex = 5;
+    shopButton.style.position = "absolute";
+    shopButton.style.left = "50%";
+    shopButton.style.top = "31%";
+    shopButton.style.transform = "translate(-50%, -50%)";
+    shopButton.innerHTML = "Shop";
+    shopButton.onclick = () => {
+        shop();
+    }
     menu.appendChild(levelSelectButton);
+    menu.appendChild(shopButton);
 }
 mainMenu();
 resetButton.onclick = () => {
