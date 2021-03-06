@@ -63,7 +63,7 @@ class RangedEnemyAI extends EnemyAI {
             this.enemy.bowArrow.visible = false;
             this.enemy.arrow.visible = false;
         }
-        if ((this.enemy.position.distanceTo(target.position) < 7.5 || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
+        if ((this.enemy.position.distanceTo(target.position) < 7.5 || this.enemy.health < this.enemy.maxHealth || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
             if (!this.enemy.aggro) {
                 this.enemy.animation.play("Running");
                 this.enemy.aggroState = "pursue";
@@ -180,7 +180,7 @@ class RangedEnemyAI extends EnemyAI {
                         instance.enemy.bow = object;
                         instance.third.load.fbx("arrow").then(arrow => {
                             arrow.scale.set(15, 6, 6);
-                            arrow.rotation.z = 3 * Math.PI / 2;
+                            arrow.rotation.z = Math.PI / 2;
                             child.add(arrow);
                             instance.enemy.bowArrow = arrow;
                         });

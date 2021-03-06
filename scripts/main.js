@@ -3,6 +3,8 @@ let canJump = true;
 let targetXRot = 0;
 let currXRot = 0;
 let currYRot = Math.PI / 8;
+let currZRot = 0;
+let targetZRot = 0;
 let targetYRot = Math.PI / 8;
 let currXOffset = 0.6;
 let targetXOffset = 0.6;
@@ -24,6 +26,11 @@ let levelAIs = {
     1: MeleeEnemyAI,
     2: RangedEnemyAI,
     3: KnightEnemyAI
+}
+let weaponClasses = {
+    "sword": Sword,
+    "axe": Axe,
+    "bow": Bow
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -102,7 +109,9 @@ class MainScene extends Scene3D {
         instance.third.load.preload("knight-sword", './assets/models/knight-sword.fbx');
         instance.third.load.preload("shield", './assets/models/shield.fbx');
         instance.third.load.preload('metal', './assets/images/metal.png');
-
+        instance.third.load.preload('sword', './assets/weapons/sword.fbx');
+        instance.third.load.preload('axe', './assets/weapons/axe.fbx');
+        instance.third.load.preload('bow', './assets/weapons/bow.fbx');
         //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
             objects.push(instance.third.physics.add.box({
@@ -147,7 +156,7 @@ class MainScene extends Scene3D {
          });*/
         instance.player.body.setFriction(1);
         loading.innerHTML = "Loading Weapon...";
-        instance.third.load.fbx("./assets/models/samurai-sword.fbx").then(object => {
+        /*instance.third.load.fbx("./assets/weapons/sword.fbx").then(object => {
             object.receiveShadow = true;
             object.castShadow = true;
             loading.innerHTML = "Loading Enemy...";
@@ -163,7 +172,8 @@ class MainScene extends Scene3D {
             })
             instance.third.add.existing(instance.sword);
             levelAIs[currLevel].loadEnemy(instance);
-        });
+        });*/
+        weaponClasses[localProxy.playerItem].loadWeapon(instance);
 
         // add first person controls
         instance.firstPersonControls = new FirstPersonControls(instance.third.camera, instance.player, {})
@@ -176,21 +186,12 @@ class MainScene extends Scene3D {
             if (instance.hidden) {
                 return;
             }
-            if (instance.input.mousePointer.rightButtonDown() && cooldown < 10) {
-                blocking = true;
-                targetYRot = -Math.PI / 2;
-                targetXRot = -Math.PI / 2 + 0.8;
-                targetXOffset = 0.3;
-            } else if (instance.keys.Alt.isDown && cooldown < 10 && !slashing) {
-                slashing = true;
-                instance.handleSwing();
-                targetXOffset = -0.6;
-                targetYOffset = 0.6;
-                targetYRot = -Math.PI / 2;
-                targetXRot = -Math.PI / 2;
-            } else if (cooldown < 10) {
-                targetXRot = -Math.PI / 2 + 0.175;
-                targetYRot = 0;
+            if (instance.input.mousePointer.rightButtonDown()) {
+                instance.weaponController.secondaryAttack();
+            } else if (instance.keys.Alt.isDown) {
+                instance.weaponController.specialAttack();
+            } else {
+                instance.weaponController.primaryAttack();
             }
             instance.input.mouse.requestPointerLock()
         })
@@ -203,7 +204,7 @@ class MainScene extends Scene3D {
                 if (localProxy.playerHat === "scoutsCap") {
                     multiplier += 0.25;
                 }
-                instance.firstPersonControls.update(pointer.movementX * sensitivity * multiplier, pointer.movementY * sensitivity * multiplier);
+                instance.firstPersonControls.update(pointer.movementX * 0.5 * sensitivity * multiplier, pointer.movementY * sensitivity * 0.5 * multiplier);
             }
         })
         instance.events.on('update', () => {
@@ -295,7 +296,10 @@ class MainScene extends Scene3D {
             this.player.body.setVelocity(0, 0, 0);
             this.player.body.setAngularVelocity(0, 0, 0);
         });
-        levelAIs[currLevel].loadEnemy(this);
+        this.sword.visible = false;
+        this.third.scene.children.splice(this.third.scene.children.indexOf(this.sword), 1);
+        weaponClasses[localProxy.playerItem].loadWeapon(this);
+        //levelAIs[currLevel].loadEnemy(this);
         // this.initiated = false;
         //this.scene.restart();
         //bootFunction();
@@ -369,36 +373,9 @@ class MainScene extends Scene3D {
         const block = this.input.mousePointer.rightButtonDown();
         if (!block) {
             blocking = false;
+            this.weaponController.charge = 0;
         }
-        currXRot += (targetXRot - currXRot) / (slashing ? 10 : 3);
-        if (Math.abs(targetXRot - currXRot) < 0.01 && !blocking) {
-            if (targetXRot !== 0 && !slashing) {
-                this.handleSwing();
-            }
-            targetXRot = 0;
-        }
-        currYRot += (targetYRot - currYRot) / (slashing ? 10 : 3);
-        if (Math.abs(targetYRot - currYRot) < 0.01 && !blocking) {
-            targetYRot = Math.PI / 8;
-        }
-        currXOffset += (targetXOffset - currXOffset) / (slashing ? 10 : 7);
-        if (Math.abs(targetXOffset - currXOffset) < 0.01 && !blocking) {
-            targetXOffset = 0.6;
-        }
-        currYOffset += (targetYOffset - currYOffset) / (slashing ? 10 : 7);
-        if (Math.abs(targetYOffset - currYOffset) < 0.01 && !blocking) {
-            if (targetYOffset === 0.35) {
-                slashing = false;
-            }
-            if (slashing) {
-                //targetCooldown = 225;
-            }
-            targetYOffset = 0.35;
-        }
-        cooldown += (targetCooldown - cooldown) / 10;
-        if (Math.abs(targetCooldown - cooldown) < 0.01) {
-            targetCooldown = 0;
-        }
+        this.weaponController.update();
         if (this.keys.w.isDown && this.player.health > 0) {
             this.bob.x = Math.sin(time * -0.009) * 0.0075;
             this.bob.y = Math.sin(time * 0.009) * 0.0075;
@@ -414,21 +391,7 @@ class MainScene extends Scene3D {
             this.third.camera.rotateZ(Math.PI / 2 * Math.min(framesSinceDeath / 60, 1));
         }
         if (this.sword) {
-            // adjust the position of the rifle to the camera
-            const raycaster = new THREE.Raycaster();
-            // x and y are normalized device coordinates from -1 to +1
-            raycaster.setFromCamera({ x: currXOffset - this.bob.x, y: -currYOffset - this.bob.y - (cooldown / 100) - (framesSinceDeath / 60) - 0 }, this.third.camera);
-            const pos = new THREE.Vector3();
-            pos.copy(raycaster.ray.direction);
-            pos.multiplyScalar(1.2 + this.bob.z);
-            pos.add(raycaster.ray.origin);
-
-            this.sword.position.copy(pos);
-            const rot = this.third.camera.rotation;
-            this.sword.rotation.copy(rot);
-            this.sword.rotateX(currXRot);
-            this.sword.rotateY(currYRot);
-            this.sword.rotateZ((-3 * (Math.PI / 2)) + Math.PI + 0.2);
+            this.weaponController.placeWeapon(this);
         }
         if (this.third.scene.children.find(x => x.name === "ground")) {
             /*const groundRaycaster = new THREE.Raycaster();
@@ -483,6 +446,9 @@ class MainScene extends Scene3D {
         }
         if (localProxy.playerHat === "featheredCap") {
             speed *= 1.5;
+        }
+        if (this.weaponController.charge > 0) {
+            speed *= 0.25;
         }
         if (this.keys.w.isDown) {
             velocityUpdate[0] += Math.sin(theta) * speed;
@@ -756,3 +722,8 @@ resetButton.onclick = () => {
     gameOverMessage.innerHTML = "";
     levelSelect();
 }
+document.addEventListener('contextmenu', e => {
+    if (menu.innerHTML === "") {
+        e.preventDefault();
+    }
+});

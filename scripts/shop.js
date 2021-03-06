@@ -136,11 +136,12 @@ const items = {
             title: "Bow",
             image: "bow.png",
             description: "Can shoot and fire arrows. As its special attack, fires a supercharged, high-damage, high-velocity shot. Also can perform a melee attack if necessary."
-        },
-        boomerang: {
-            title: "Boomerang",
-            image: "boomerang.png",
-            description: "Can be thrown in a straight line or arc. Always returns to thrower. Can block attacks as well."
         }
+        /*,
+                boomerang: {
+                    title: "Boomerang",
+                    image: "boomerang.png",
+                    description: "Can be thrown in a straight line or arc. Always returns to thrower. Can block attacks as well."
+                }*/
     }
 }

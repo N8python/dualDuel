@@ -36,7 +36,7 @@ class MeleeEnemyAI extends EnemyAI {
                 this.enemy.attacking = false;
             }
         }
-        if ((this.enemy.position.distanceTo(target.position) < 5 || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
+        if ((this.enemy.position.distanceTo(target.position) < 5 || this.enemy.health < this.enemy.maxHealth || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
             if (!this.enemy.aggro) {
                 this.enemy.animation.play("Running");
             }

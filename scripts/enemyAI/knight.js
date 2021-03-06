@@ -65,7 +65,7 @@ class KnightEnemyAI extends EnemyAI {
             this.stayUp(1);
             this.rotateTowards(player.position.x, player.position.z);
         }
-        if ((this.enemy.position.distanceTo(target.position) < 5 || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
+        if ((this.enemy.position.distanceTo(target.position) < 5 || this.enemy.health < this.enemy.maxHealth || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
             if (!this.enemy.aggro) {
                 this.enemy.animation.play("Running");
                 this.enemy.aggroState = "pursue";
