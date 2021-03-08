@@ -39,7 +39,7 @@ class PistolEnemyAI extends EnemyAI {
                 this.enemy.animation.play("Running");
                 this.enemy.aggroState = "pursue";
             }
-            if (e.action.getClip().duration === 2.366666555404663 && this.enemy && this.enemy.body) {
+            if ((e.action.getClip().duration === 2.366666555404663 || e.action.getClip().duration === 2.633333444595337 || e.action.getClip().duration === 2.133333444595337) && this.enemy && this.enemy.body) {
                 this.enemy.animation.play("Running");
                 this.enemy.aggroState = "flee";
                 this.enemy.knife.visible = false;
@@ -92,7 +92,14 @@ class PistolEnemyAI extends EnemyAI {
                 }
                 if (this.enemy.position.distanceTo(target.position) < 6.5 && this.enemy.bulletsLeft > 0) {
                     if (this.enemy.position.distanceTo(target.position) < 3 && Math.random() < 0.5) {
-                        this.enemy.animation.play("Slashing");
+                        let seed = Math.random();
+                        if (seed < 0.33) {
+                            this.enemy.animation.play("Slashing");
+                        } else if (seed < 0.67) {
+                            this.enemy.animation.play("Slashing2");
+                        } else {
+                            this.enemy.animation.play("Slashing3");
+                        }
                         this.enemy.knife.visible = true;
                         this.enemy.aggroState = "attack";
                     } else {
@@ -111,7 +118,13 @@ class PistolEnemyAI extends EnemyAI {
                     this.enemy.aggroState = "reload";
                 } else if (this.enemy.bulletsLeft === 0) {
                     if (this.enemy.position.distanceTo(target.position) < 2) {
-                        this.enemy.animation.play("Slashing");
+                        if (seed < 0.33) {
+                            this.enemy.animation.play("Slashing");
+                        } else if (seed < 0.67) {
+                            this.enemy.animation.play("Slashing2");
+                        } else {
+                            this.enemy.animation.play("Slashing3");
+                        }
                         this.enemy.knife.visible = true;
                         this.enemy.aggroState = "attack";
                     } else {
@@ -237,10 +250,7 @@ class PistolEnemyAI extends EnemyAI {
                     })
                 });
             });*/
-            /*instance.third.load.fbx(`./assets/enemies/pistolEnemy/Shooting.fbx`).then(object => {
-                console.log(JSON.stringify(object.animations[0]));
-            });*/
-            const animsToLoad = ["running", "slashing", "death", "celebrate", "dodge", "reload", "shoot"];
+            const animsToLoad = ["running", "slashing", "slashing2", "slashing3", "death", "celebrate", "dodge", "reload", "shoot"];
             (async() => {
                 loading.innerHTML = `Loading Enemy Animations (0/${animsToLoad.length})...`;
                 for (const anim of animsToLoad) {
