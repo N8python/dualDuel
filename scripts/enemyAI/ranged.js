@@ -169,6 +169,7 @@ class RangedEnemyAI extends EnemyAI {
             instance.third.animationMixers.add(instance.enemy.animation.mixer);
             instance.enemy.animation.add('Idle', object.animations[0]);
             instance.third.load.fbx("ranged-bow").then(object => {
+                object.children = [object.children[0], object.children[1], object.children[2]];
                 object.scale.set(0.055, 0.055, 0.055);
                 object.rotation.x = Math.PI / 2;
                 //this.third.add.existing(object);
@@ -202,6 +203,7 @@ class RangedEnemyAI extends EnemyAI {
                 });
             });
             instance.third.load.fbx("quiver").then(object => {
+                object.children = [object.children[0], object.children[1]];
                 object.scale.set(15, 15, 15);
                 object.position.z = -12.5;
                 instance.enemy.traverse(child => {

@@ -83,6 +83,7 @@ class Axe extends Weapon {
     }
     static loadWeapon(instance) {
         instance.third.load.fbx("axe").then(object => {
+            object.children = [object.children[2]];
             object.receiveShadow = true;
             object.castShadow = true;
             loading.innerHTML = "Loading Enemy...";

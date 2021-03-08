@@ -92,6 +92,9 @@ class MeleeEnemyAI extends EnemyAI {
             instance.third.animationMixers.add(instance.enemy.animation.mixer);
             instance.enemy.animation.add('Idle', object.animations[0]);
             instance.third.load.fbx("melee-sword").then(object => {
+                object.children.pop();
+                object.children.pop();
+                object.children.pop();
                 object.scale.set(0.03, 0.03, 0.03);
                 //this.third.add.existing(object);
                 instance.enemy.traverse(child => {

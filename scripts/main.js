@@ -25,7 +25,8 @@ let mainScene;
 let levelAIs = {
     1: MeleeEnemyAI,
     2: RangedEnemyAI,
-    3: KnightEnemyAI
+    3: KnightEnemyAI,
+    4: PistolEnemyAI
 }
 let weaponClasses = {
     "sword": Sword,
@@ -107,8 +108,13 @@ class MainScene extends Scene3D {
         instance.third.load.preload("quiver", "./assets/models/sg-quiver.fbx");
         instance.third.load.preload("knight-enemy", './assets/enemies/knightEnemy/model.fbx');
         instance.third.load.preload("knight-sword", './assets/models/knight-sword.fbx');
+        instance.third.load.preload("pistol-enemy", './assets/enemies/pistolEnemy/model.fbx');
+        instance.third.load.preload("pistol-pistol", './assets/models/pistol.fbx');
+        instance.third.load.preload("pistol-knife", './assets/models/knife.fbx');
+        instance.third.load.preload("bullet", "./assets/models/bullet.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');
         instance.third.load.preload('metal', './assets/images/metal.png');
+        instance.third.load.preload('cobblestone', './assets/images/cobblestone.jpg');
         instance.third.load.preload('sword', './assets/weapons/sword.fbx');
         instance.third.load.preload('axe', './assets/weapons/axe.fbx');
         instance.third.load.preload('bow', './assets/weapons/bow.fbx');
@@ -124,16 +130,21 @@ class MainScene extends Scene3D {
             }, { phong: { color: 0xffffff * Math.random() } }));
         }
         instance.third.renderer.gammaFactor = 1.5;
-        const walls = [];
-        walls.push(instance.third.physics.add.box({ height: 2.5, z: 10, y: 1.25, width: 21, depth: 1 }, { phong: { color: 0x0000cc } }));
-        walls.push(instance.third.physics.add.box({ height: 2.5, z: -10, y: 1.25, width: 21, depth: 1 }, { phong: { color: 0x0000cc } }));
-        walls.push(instance.third.physics.add.box({ height: 2.5, x: 10, y: 1.25, width: 1, depth: 21 }, { phong: { color: 0x0000cc } }));
-        walls.push(instance.third.physics.add.box({ height: 2.5, x: -10, y: 1.25, width: 1, depth: 21 }, { phong: { color: 0x0000cc } }));
+        instance.third.load.texture("cobblestone").then(texture => {
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(4, 2);
+            const walls = [];
+            walls.push(instance.third.physics.add.box({ height: 2.5, z: 10, y: 1.25, width: 21, depth: 1 }, { phong: { map: texture, color: 0x999999 } }));
+            walls.push(instance.third.physics.add.box({ height: 2.5, z: -10, y: 1.25, width: 21, depth: 1 }, { phong: { map: texture, color: 0x999999 } }));
+            walls.push(instance.third.physics.add.box({ height: 2.5, x: 10, y: 1.25, width: 1, depth: 21 }, { phong: { map: texture, color: 0x999999 } }));
+            walls.push(instance.third.physics.add.box({ height: 2.5, x: -10, y: 1.25, width: 1, depth: 21 }, { phong: { map: texture, color: 0x999999 } }));
 
-        walls.forEach(wall => {
-            wall.body.setCollisionFlags(2);
+            walls.forEach(wall => {
+                wall.body.setCollisionFlags(2);
+            });
+            instance.walls = walls;
         });
-        instance.walls = walls;
         // add red dot
         // add player
         instance.player = instance.third.physics.add.sphere({ z: -5 });
@@ -338,6 +349,11 @@ class MainScene extends Scene3D {
             return;
         }
         jumpCooldown -= 1;
+        if (this.player.position.y < -10 && gameOverMessage.innerHTML === "") {
+            resetButton.style.display = "block";
+            gameOverMessage.innerHTML = "You Died!"
+            this.player.health = 0;
+        }
         this.player.health = Math.max(this.player.health, 0);
         if (this.player.health === 0) {
             if (framesSinceDeath === 0) {
@@ -522,7 +538,7 @@ const levelSelect = () => {
         }
         button.style.width = "75px";
         button.style.transform = "translate(-50%, -50%)";
-        if (i > 3) {
+        if (i > 4) {
             button.setAttribute("disabled", "disabled");
         }
         button.onclick = () => {

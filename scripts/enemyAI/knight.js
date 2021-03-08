@@ -176,6 +176,7 @@ class KnightEnemyAI extends EnemyAI {
                 }
             });
             instance.third.load.fbx("knight-sword").then(object => {
+                object.children = [object.children[1]];
                 object.receiveShadow = true;
                 object.castShadow = true;
                 object.scale.set(5, 5, 5);
@@ -190,6 +191,7 @@ class KnightEnemyAI extends EnemyAI {
                 });
             });
             instance.third.load.fbx("shield").then(object => {
+                object.children = [object.children[0]];
                 object.scale.set(12.5, 12.5, 12.5);
                 object.rotation.y = Math.PI / 2;
                 object.rotation.x = Math.PI / 4;

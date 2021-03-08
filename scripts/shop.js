@@ -103,7 +103,7 @@ const items = {
         scoutsCap: {
             title: "Scout's Cap",
             image: "scoutsCap.png",
-            description: "Buffs speed and allows you to reload bow faster. Makes you more alert."
+            description: "Buffs speed. Makes you more alert."
         },
         knightsHelmet: {
             title: "Knights Helmet",

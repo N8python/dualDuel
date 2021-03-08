@@ -112,6 +112,7 @@ class Bow extends Weapon {
     }
     static loadWeapon(instance) {
         instance.third.load.fbx("bow").then(object => {
+            object.children = [object.children[3], object.children[5]];
             object.receiveShadow = true;
             object.castShadow = true;
             loading.innerHTML = "Loading Enemy...";
