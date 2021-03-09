@@ -63,6 +63,13 @@ if (localProxy.coins === undefined) {
 if (!localProxy.levelWins) {
     localProxy.levelWins = {};
 }
+if (!localProxy.maxLevelUnlocked) {
+    localProxy.maxLevelUnlocked = 1;
+}
+const hardReset = () => {
+    localStorage.clear();
+    location.reload();
+}
 
 function angleDifference(angle1, angle2) {
     const diff = ((angle2 - angle1 + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -553,7 +560,7 @@ const levelSelect = () => {
         }
         button.style.width = "75px";
         button.style.transform = "translate(-50%, -50%)";
-        if (i > 4) {
+        if (i > localProxy.maxLevelUnlocked) {
             button.setAttribute("disabled", "disabled");
         }
         button.onclick = () => {
@@ -781,6 +788,9 @@ const playerWin = () => {
     }
     addCoins(levelCoinYield[currLevel][levelWins[currLevel] - 1] ? levelCoinYield[currLevel][levelWins[currLevel] - 1] : levelCoinYield[currLevel][levelCoinYield[currLevel].length - 1]);
     localProxy.levelWins = levelWins;
+    if (localProxy.maxLevelUnlocked === currLevel) {
+        localProxy.maxLevelUnlocked++;
+    }
 }
 const padTo = num => {
     num = Math.floor(num).toString();
