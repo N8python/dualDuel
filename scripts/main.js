@@ -94,7 +94,7 @@ function playerTakeDamage(damage, type) {
         reduction = 0;
     }
     player.health -= damage * (1 - reduction);
-    if (items.armor[localProxy.playerArmor].stats.spikes && type === "melee") {
+    if (items.armor[localProxy].playerArmor && items.armor[localProxy.playerArmor].stats.spikes && type === "melee") {
         mainScene.enemy.health -= items.armor[localProxy.playerArmor].stats.spikes();
     }
 }
@@ -224,7 +224,7 @@ class MainScene extends Scene3D {
         instance.input.on('pointermove', pointer => {
             if (instance.input.mouse.locked && instance.player && instance.player.health > 0) {
                 let multiplier = 1;
-                if (items.armor[localProxy.playerArmor].stats.sensitivityDebuff) {
+                if (items.armor[localProxy.playerArmor] && items.armor[localProxy.playerArmor].stats.sensitivityDebuff) {
                     multiplier -= items.armor[localProxy.playerArmor].stats.sensitivityDebuff;
                 }
                 if (localProxy.playerHat === "scoutsCap") {
