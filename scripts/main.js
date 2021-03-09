@@ -94,7 +94,7 @@ function playerTakeDamage(damage, type) {
         reduction = 0;
     }
     player.health -= damage * (1 - reduction);
-    if (items.armor[localProxy].playerArmor && items.armor[localProxy.playerArmor].stats.spikes && type === "melee") {
+    if (items.armor[localProxy.playerArmor] && items.armor[localProxy.playerArmor].stats.spikes && type === "melee") {
         mainScene.enemy.health -= items.armor[localProxy.playerArmor].stats.spikes();
     }
 }
