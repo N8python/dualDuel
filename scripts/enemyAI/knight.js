@@ -28,6 +28,7 @@ class KnightEnemyAI extends EnemyAI {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!"
+                playerWin();
                 this.enemy.dead = true;
                 this.enemy.animation.play("Death", 120, false);
             }

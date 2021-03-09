@@ -54,7 +54,8 @@ class PistolEnemyAI extends EnemyAI {
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
-                gameOverMessage.innerHTML = "You Won!"
+                gameOverMessage.innerHTML = "You Won!";
+                playerWin();
                 this.enemy.dead = true;
                 this.enemy.animation.play("Death", 120, false);
             }
@@ -118,6 +119,7 @@ class PistolEnemyAI extends EnemyAI {
                     this.enemy.aggroState = "reload";
                 } else if (this.enemy.bulletsLeft === 0) {
                     if (this.enemy.position.distanceTo(target.position) < 2) {
+                        let seed = Math.random();
                         if (seed < 0.33) {
                             this.enemy.animation.play("Slashing");
                         } else if (seed < 0.67) {

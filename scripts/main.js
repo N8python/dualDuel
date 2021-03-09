@@ -33,6 +33,12 @@ let weaponClasses = {
     "axe": Axe,
     "bow": Bow
 }
+let levelCoinYield = {
+    1: [50, 25, 10],
+    2: [75, 50, 20, 10],
+    3: [100, 50, 25, 15],
+    4: [125, 75, 30, 15]
+}
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
 const loading = document.getElementById("loading");
@@ -47,6 +53,15 @@ if (!localProxy.playerHat) {
 }
 if (!localProxy.playerItem) {
     localProxy.playerItem = "sword";
+}
+if (!localProxy.unlockedStuff) {
+    localProxy.unlockedStuff = ["sword"];
+}
+if (localProxy.coins === undefined) {
+    localProxy.coins = 0;
+}
+if (!localProxy.levelWins) {
+    localProxy.levelWins = {};
 }
 
 function angleDifference(angle1, angle2) {
@@ -94,10 +109,10 @@ class MainScene extends Scene3D {
         instance.accessThirdDimension({ maxSubSteps: 10, fixedTimeStep: 1 / 180 });
         instance.third.warpSpeed('-orbitControls').then(({ ground }) => {
             instance.third.load.texture('metal').then(texture => {
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set(32, 32);
-                ground.material = new THREE.MeshPhongMaterial({ map: texture, opacity: 0.5, transparent: true, color: 0x666666 })
+                texture.wrapS = THREE.MirroredRepeatWrapping;
+                texture.wrapT = THREE.MirroredRepeatWrapping;
+                texture.repeat.set(8, 8);
+                ground.material = new THREE.MeshPhongMaterial({ map: texture, opacity: 0.5, transparent: true })
             })
         })
         instance.third.load.preload("melee-enemy", './assets/enemies/meleeEnemy/model.fbx');
@@ -113,7 +128,7 @@ class MainScene extends Scene3D {
         instance.third.load.preload("pistol-knife", './assets/models/knife.fbx');
         instance.third.load.preload("bullet", "./assets/models/bullet.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');
-        instance.third.load.preload('metal', './assets/images/metal.png');
+        instance.third.load.preload('metal', './assets/images/ice.png');
         instance.third.load.preload('cobblestone', './assets/images/cobblestone.jpg');
         instance.third.load.preload('sword', './assets/weapons/sword.fbx');
         instance.third.load.preload('axe', './assets/weapons/axe.fbx');
@@ -651,28 +666,42 @@ const shop = () => {
                     itemDiv.style.borderBottom = "4px solid black";
                 }
                 const selectButton = document.createElement("button");
-                selectButton.innerHTML = "Select";
+                if (localProxy.unlockedStuff.includes(item)) {
+                    selectButton.innerHTML = "Select";
+                    selectButton.style.width = "100px";
+                } else {
+                    selectButton.innerHTML = `Buy for ${items[category][item].cost} coins`;
+                    selectButton.style.width = "175px";
+                }
                 selectButton.style.float = "right";
                 selectButton.style.fontSize = "16px";
-                selectButton.style.width = "100px";
                 selectButton.style.padding = "8px";
                 selectButton.classList.add("btn");
                 storeContent.appendChild(selectButton);
                 storeContent.appendChild(itemDiv);
                 selectButton.onclick = () => {
-                    localProxy["player" + category[0].toUpperCase() + category.slice(1, category.endsWith("s") ? category.length - 1 : category.length)] = item;
-                    display.src = `assets/images/items/${category}/${items[category][item].image}`;
-                    if (mainScene.player) {
-                        if (localProxy.playerHat === "featheredCap") {
-                            mainScene.player.health = 75;
-                            mainScene.player.maxHealth = 75;
-                        } else if (localProxy.playerHat === "umbrella") {
-                            mainScene.player.health = 65;
-                            mainScene.player.maxHealth = 65;
-                            mainScene.player.body.setGravity(0, -9.81 * 0.5, 0)
-                        } else {
-                            mainScene.player.health = 100;
-                            mainScene.player.maxHealth = 100;
+                    if (selectButton.innerHTML === "Select") {
+                        localProxy["player" + category[0].toUpperCase() + category.slice(1, category.endsWith("s") ? category.length - 1 : category.length)] = item;
+                        display.src = `assets/images/items/${category}/${items[category][item].image}`;
+                        if (mainScene.player) {
+                            if (localProxy.playerHat === "featheredCap") {
+                                mainScene.player.health = 75;
+                                mainScene.player.maxHealth = 75;
+                            } else if (localProxy.playerHat === "umbrella") {
+                                mainScene.player.health = 65;
+                                mainScene.player.maxHealth = 65;
+                                mainScene.player.body.setGravity(0, -9.81 * 0.5, 0)
+                            } else {
+                                mainScene.player.health = 100;
+                                mainScene.player.maxHealth = 100;
+                            }
+                        }
+                    } else {
+                        if (localProxy.coins >= items[category][item].cost && transactionSettled) {
+                            subtractCoins(items[category][item].cost);
+                            localProxy.unlockedStuff = localProxy.unlockedStuff.concat(item);
+                            selectButton.innerHTML = "Select";
+                            selectButton.style.width = "100px";
                         }
                     }
                 }
@@ -742,4 +771,55 @@ document.addEventListener('contextmenu', e => {
     if (menu.innerHTML === "") {
         e.preventDefault();
     }
+});
+const playerWin = () => {
+    const levelWins = localProxy.levelWins;
+    if (!levelWins[currLevel]) {
+        levelWins[currLevel] = 1;
+    } else {
+        levelWins[currLevel]++;
+    }
+    addCoins(levelCoinYield[currLevel][levelWins[currLevel] - 1] ? levelCoinYield[currLevel][levelWins[currLevel] - 1] : levelCoinYield[currLevel][levelCoinYield[currLevel].length - 1]);
+    localProxy.levelWins = levelWins;
+}
+const padTo = num => {
+    num = Math.floor(num).toString();
+    while (num.length < 4) {
+        num = "0" + num;
+    }
+    return num;
+}
+let transactionSettled = true;
+const addCoins = num => {
+    transactionSettled = false;
+    let addInterval = setInterval(() => {
+        localProxy.coins += Math.ceil(num / 10);
+        num -= Math.ceil(num / 10);
+        if (num < 2) {
+            localProxy.coins += 1;
+            transactionSettled = true;
+            clearInterval(addInterval);
+        }
+        localProxy.coins = Math.min(localProxy.coins, 9999);
+    }, 30)
+}
+const subtractCoins = num => {
+    transactionSettled = false;
+    num *= -1;
+    num -= 9;
+    let addInterval = setInterval(() => {
+        localProxy.coins += Math.ceil(num / 10);
+        num -= Math.ceil(num / 10);
+        if (num > -10) {
+            //localProxy.coins += 1;
+            transactionSettled = true;
+            clearInterval(addInterval);
+        }
+        localProxy.coins = Math.max(localProxy.coins, 0);
+    }, 30)
+}
+setInterval(() => {
+    document.getElementById("coinDisplay").innerHTML = padTo(localProxy.coins, 4);
+    localProxy.coins = Math.min(localProxy.coins, 9999);
+    localProxy.coins = Math.max(localProxy.coins, 0);
 });

@@ -10,7 +10,8 @@ class MeleeEnemyAI extends EnemyAI {
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
-                gameOverMessage.innerHTML = "You Won!"
+                gameOverMessage.innerHTML = "You Won!";
+                playerWin();
                 this.enemy.dead = true;
                 this.enemy.animation.play("Death", 120, false);
             }
