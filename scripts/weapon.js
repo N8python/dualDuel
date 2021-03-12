@@ -13,14 +13,14 @@ class Weapon {
             const angleDiff = cTheta - theta;
             if (angleDiff < rightBound && angleDiff > leftBound && dist < reach && Math.abs(object.position.y - player.position.y) < 2 && !object.dead) {
                 let blocked = false;
-                if (object.aggroState && object.strafeCounter !== undefined) {
+                if (object.aggroState && (object.strafeCounter !== undefined || object.isBomber)) {
                     if (slashing) {
-                        if (Math.random() < 0.33) {
+                        if (Math.random() < 0.33 + (object.isBomber ? -0.33 : 0)) {
                             object.animation.play("Block");
                             blocked = true;
                         }
                     } else {
-                        if (Math.random() < 0.2) {
+                        if (Math.random() < 0.2 + (object.isBomber ? -0.2 : 0)) {
                             object.animation.play("Block");
                             blocked = true;
                         }
@@ -29,6 +29,9 @@ class Weapon {
                         setTimeout(() => {
                             targetXRot = 0.5;
                         }, 0);
+                        if (object.isBomber) {
+                            object.aggroState = "block";
+                        }
                     }
                     if (Math.random() < 0.25 && !blocked) {
                         object.aggroState = "flee";

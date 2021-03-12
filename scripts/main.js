@@ -26,7 +26,8 @@ let levelAIs = {
     1: MeleeEnemyAI,
     2: RangedEnemyAI,
     3: KnightEnemyAI,
-    4: PistolEnemyAI
+    4: PistolEnemyAI,
+    5: BomberEnemyAI
 }
 let weaponClasses = {
     "sword": Sword,
@@ -37,7 +38,8 @@ let levelCoinYield = {
     1: [50, 25, 10],
     2: [75, 50, 20, 10],
     3: [100, 50, 25, 15],
-    4: [125, 75, 30, 15]
+    4: [125, 75, 30, 15],
+    5: [200, 100, 50, 25]
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -67,7 +69,13 @@ if (!localProxy.maxLevelUnlocked) {
     localProxy.maxLevelUnlocked = 1;
 }
 const hardReset = () => {
-    localStorage.clear();
+    localProxy.playerArmor = "none";
+    localProxy.playerHat = "none";
+    localProxy.playerItem = "sword";
+    localProxy.unlockedStuff = ["sword"];
+    localProxy.coins = 0;
+    localProxy.levelWins = {};
+    localProxy.maxLevelUnlocked = 1;
     location.reload();
 }
 
@@ -76,12 +84,24 @@ function angleDifference(angle1, angle2) {
     return (diff < -Math.PI) ? diff + (Math.PI * 2) : diff;
 }
 
-function futurePlayerPos(seconds) {
-    player.body.transform();
+function futurePlayerPos(seconds, transform = true) {
+    if (transform) {
+        player.body.transform();
+    }
     return {
         x: player.position.x + player.body.velocity.x * seconds,
         y: player.position.y + player.body.velocity.y * seconds,
         z: player.position.z + player.body.velocity.z * seconds
+    }
+}
+
+function dealExplodeDamage(position, damage, decayRate, strength = 6) {
+    playerTakeDamage(damage / (decayRate ** player.position.distanceTo(position)), "explosion");
+    player.body.setVelocity(player.body.velocity.x + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z), player.body.velocity.y + Math.max(4 - player.position.distanceTo(position), 0), player.body.velocity.z + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z));
+    if (!mainScene.enemy.isBomber) {
+        mainScene.enemy.health -= damage / (decayRate ** mainScene.enemy.position.distanceTo(position));
+        const enemy = mainScene.enemy;
+        mainScene.enemy.body.setVelocity(enemy.body.velocity.x + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z), enemy.body.velocity.y + Math.max(strength - enemy.position.distanceTo(position), 0), enemy.body.velocity.z + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z));
     }
 }
 
@@ -133,6 +153,10 @@ class MainScene extends Scene3D {
         instance.third.load.preload("pistol-enemy", './assets/enemies/pistolEnemy/model.fbx');
         instance.third.load.preload("pistol-pistol", './assets/models/pistol.fbx');
         instance.third.load.preload("pistol-knife", './assets/models/knife.fbx');
+        instance.third.load.preload("bomber-enemy", './assets/enemies/bomberEnemy/model.fbx');
+        instance.third.load.preload("bomber-firelance", './assets/models/fire-lance.fbx');
+        instance.third.load.preload("bomber-dynamite", './assets/models/dynamite.fbx');
+        instance.third.load.preload("bomber-bomb", './assets/models/bomb.fbx');
         instance.third.load.preload("bullet", "./assets/models/bullet.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');
         instance.third.load.preload('metal', './assets/images/ice.png');
@@ -140,6 +164,33 @@ class MainScene extends Scene3D {
         instance.third.load.preload('sword', './assets/weapons/sword.fbx');
         instance.third.load.preload('axe', './assets/weapons/axe.fbx');
         instance.third.load.preload('bow', './assets/weapons/bow.fbx');
+        (async() => {
+            const particles = ["smoke", "dynamite", "explosion"];
+            for (const particle of particles) {
+                const text = await fetch(`./assets/particles/${particle}.json`);
+                const json = await text.json();
+                Nebula.System.fromJSONAsync(json, THREE, { shouldAutoEmit: false }).then(system => {
+                    const renderer = new Nebula.SpriteRenderer(instance.third.scene, THREE);
+                    const particles = system.addRenderer(renderer);
+                    mainScene[particle] = particles;
+                    particles.emit({
+                        onStart: () => {},
+                        onUpdate: () => {},
+                        onEnd: () => {},
+                    });
+                    particles.emitters[0].currentEmitTime = 1000;
+                    setInterval(() => {
+                        particles.update();
+                        //console.log(system.emitters[0].particles.length);
+                    }, 33);
+                    /*setInterval(() => {
+                        mainScene.explosion.emitters[0].position.x = Math.random() * 10 - 5;
+                        mainScene.explosion.emitters[0].position.z = Math.random() * 10 - 5;
+                        mainScene.explosion.emitters[0].currentEmitTime = 0;
+                    }, 2500)*/
+                });
+            }
+        })();
         //this.third.haveSomeFun(50);
         for (let i = 0; i < 0; i++) {
             objects.push(instance.third.physics.add.box({
@@ -263,14 +314,14 @@ class MainScene extends Scene3D {
             const angleDiff = cTheta - theta;
             if (angleDiff < (slashing ? Math.PI / 4 : Math.PI / 6) && angleDiff > (slashing ? -Math.PI / 4 : 0) && dist < 3.5 && Math.abs(object.position.y - player.position.y) < 2 && !object.dead) {
                 let blocked = false;
-                if (object.aggroState && object.strafeCounter !== undefined) {
+                if (object.aggroState && (object.strafeCounter !== undefined || object.runTick !== undefined)) {
                     if (slashing) {
-                        if (Math.random() < 0.33) {
+                        if (Math.random() < 1) {
                             object.animation.play("Block");
                             blocked = true;
                         }
                     } else {
-                        if (Math.random() < 0.2) {
+                        if (Math.random() < 1) {
                             object.animation.play("Block");
                             blocked = true;
                         }
