@@ -149,6 +149,12 @@ const items = {
             image: "bow.png",
             description: "Can shoot and fire arrows. As its special attack, fires a supercharged, high-damage, high-velocity shot. Also can perform a melee attack if necessary.",
             cost: 500
+        },
+        crossbow: {
+            title: "Crossbow",
+            image: "crossbow.png",
+            description: "Can fire arrows and dynamite, as a special attack. Also can perform a simple melee jab.",
+            cost: 750
         }
         /*,
                 boomerang: {

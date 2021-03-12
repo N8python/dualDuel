@@ -10,6 +10,8 @@ let currXOffset = 0.6;
 let targetXOffset = 0.6;
 let currYOffset = 0.35;
 let targetYOffset = 0.35;
+let zDepth = 0;
+let targetZDepth = 0;
 let cooldown = 0;
 let targetCooldown = 0;
 let jumpCooldown = 0;
@@ -32,7 +34,8 @@ let levelAIs = {
 let weaponClasses = {
     "sword": Sword,
     "axe": Axe,
-    "bow": Bow
+    "bow": Bow,
+    "crossbow": Crossbow
 }
 let levelCoinYield = {
     1: [50, 25, 10],
@@ -95,13 +98,14 @@ function futurePlayerPos(seconds, transform = true) {
     }
 }
 
-function dealExplodeDamage(position, damage, decayRate, strength = 6) {
+function dealExplodeDamage(position, damage, decayRate, strength = 6, fromPlayer) {
     playerTakeDamage(damage / (decayRate ** player.position.distanceTo(position)), "explosion");
     player.body.setVelocity(player.body.velocity.x + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z), player.body.velocity.y + Math.max(4 - player.position.distanceTo(position), 0), player.body.velocity.z + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z));
-    if (!mainScene.enemy.isBomber) {
+    if (!mainScene.enemy.isBomber || fromPlayer) {
         mainScene.enemy.health -= damage / (decayRate ** mainScene.enemy.position.distanceTo(position));
+        mainScene.enemy.health = Math.max(mainScene.enemy.health, 0);
         const enemy = mainScene.enemy;
-        mainScene.enemy.body.setVelocity(enemy.body.velocity.x + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z), enemy.body.velocity.y + Math.max(strength - enemy.position.distanceTo(position), 0), enemy.body.velocity.z + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z));
+        mainScene.enemy.body.setVelocity(enemy.body.velocity.x + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z), enemy.body.velocity.y + Math.max(strength * 0.25 - enemy.position.distanceTo(position), 0), enemy.body.velocity.z + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z));
     }
 }
 
@@ -164,6 +168,7 @@ class MainScene extends Scene3D {
         instance.third.load.preload('sword', './assets/weapons/sword.fbx');
         instance.third.load.preload('axe', './assets/weapons/axe.fbx');
         instance.third.load.preload('bow', './assets/weapons/bow.fbx');
+        instance.third.load.preload('crossbow', './assets/weapons/crossbow.fbx');
         (async() => {
             const particles = ["smoke", "dynamite", "explosion"];
             for (const particle of particles) {
@@ -427,6 +432,12 @@ class MainScene extends Scene3D {
             gameOverMessage.innerHTML = "You Died!"
             this.player.health = 0;
         }
+        if (this.enemy.position.y < -10 && gameOverMessage.innerHTML === "") {
+            resetButton.style.display = "block";
+            gameOverMessage.innerHTML = "You Won!";
+            playerWin();
+            this.enemy.dead = true;
+        }
         this.player.health = Math.max(this.player.health, 0);
         if (this.player.health === 0) {
             if (framesSinceDeath === 0) {
@@ -462,7 +473,9 @@ class MainScene extends Scene3D {
         const block = this.input.mousePointer.rightButtonDown();
         if (!block) {
             blocking = false;
-            this.weaponController.charge = 0;
+            if (localProxy.playerItem !== "crossbow") {
+                this.weaponController.charge = 0;
+            }
         }
         this.weaponController.update();
         if (this.keys.w.isDown && this.player.health > 0) {

@@ -7,7 +7,8 @@ class Dynamite {
         z,
         xVel,
         yVel,
-        zVel
+        zVel,
+        fromPlayer
     }) {
         this.dynamite = new ExtendedObject3D();
         this.dynamite.add(model.clone());
@@ -15,6 +16,7 @@ class Dynamite {
         this.dynamite.scale.set(0.25, 0.25, 0.25);
         this.dynamite.lookAt(new THREE.Vector3(x + xVel, y + yVel, z + zVel));
         this.dynamite.exploded = false;
+        this.fromPlayer = fromPlayer;
         scene.third.add.existing(this.dynamite);
         scene.third.physics.add.existing(this.dynamite, { shape: 'hull', color: 'red' });
         objects.push(this.dynamite);
@@ -24,7 +26,8 @@ class Dynamite {
             this.dynamite.body.setVelocity(xVel, yVel, zVel);
         });
         this.dynamite.body.on.collision((otherObject, event) => {
-            if ((otherObject.name === "ground") && event === "collision" && !this.dynamite.exploded) {
+            if (((otherObject.name === "ground") && event === "collision" && !this.dynamite.exploded) ||
+                (fromPlayer && otherObject === mainScene.enemy)) {
                 this.dynamite.exploded = true;
                 mainScene.dynamite.emitters[0].position.x = this.dynamite.position.x;
                 mainScene.dynamite.emitters[0].position.y = this.dynamite.position.y;
@@ -35,7 +38,7 @@ class Dynamite {
                 projectiles.splice(projectiles.indexOf(this), 1);
                 mainScene.third.physics.destroy(this.dynamite);
                 mainScene.third.scene.children.splice(mainScene.third.scene.children.indexOf(this.dynamite), 1);
-                dealExplodeDamage(this.dynamite.position, 25, 1.5);
+                dealExplodeDamage(this.dynamite.position, 25, 1.5, 6, this.fromPlayer);
             }
         });
     }

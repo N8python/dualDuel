@@ -6,7 +6,7 @@ class Sword extends Weapon {
         });
     }
     primaryAttack() {
-        if (cooldown < 10) {
+        if (cooldown < 10 && currXRot < 0.01) {
             targetXRot = -Math.PI / 2 + 0.175;
             targetYRot = 0;
         }
