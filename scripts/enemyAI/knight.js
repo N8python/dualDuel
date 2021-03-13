@@ -22,7 +22,6 @@ class KnightEnemyAI extends EnemyAI {
         });
     }
     update(target, ground) {
-        this.stayUp(1);
         super.update(target, ground);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {

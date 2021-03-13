@@ -155,12 +155,12 @@ const items = {
             image: "crossbow.png",
             description: "Can fire arrows and dynamite, as a special attack. Also can perform a simple melee jab.",
             cost: 750
+        },
+        boomerang: {
+            title: "Boomerang",
+            image: "boomerang.png",
+            description: "Can be thrown in a straight line or arc. Always returns to thrower. Can block attacks as well.",
+            cost: 1000
         }
-        /*,
-                boomerang: {
-                    title: "Boomerang",
-                    image: "boomerang.png",
-                    description: "Can be thrown in a straight line or arc. Always returns to thrower. Can block attacks as well."
-                }*/
     }
 }

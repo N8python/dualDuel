@@ -35,7 +35,8 @@ let weaponClasses = {
     "sword": Sword,
     "axe": Axe,
     "bow": Bow,
-    "crossbow": Crossbow
+    "crossbow": Crossbow,
+    "boomerang": Boomerang,
 }
 let levelCoinYield = {
     1: [50, 25, 10],
@@ -169,6 +170,7 @@ class MainScene extends Scene3D {
         instance.third.load.preload('axe', './assets/weapons/axe.fbx');
         instance.third.load.preload('bow', './assets/weapons/bow.fbx');
         instance.third.load.preload('crossbow', './assets/weapons/crossbow.fbx');
+        instance.third.load.preload('boomerang', './assets/weapons/boomerang.fbx');
         (async() => {
             const particles = ["smoke", "dynamite", "explosion"];
             for (const particle of particles) {
