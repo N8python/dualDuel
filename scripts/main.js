@@ -29,7 +29,8 @@ let levelAIs = {
     2: RangedEnemyAI,
     3: KnightEnemyAI,
     4: PistolEnemyAI,
-    5: BomberEnemyAI
+    5: BomberEnemyAI,
+    6: JetpackEnemyAI
 }
 let weaponClasses = {
     "sword": Sword,
@@ -43,7 +44,8 @@ let levelCoinYield = {
     2: [75, 50, 20, 10],
     3: [100, 50, 25, 15],
     4: [125, 75, 30, 15],
-    5: [200, 100, 50, 25]
+    5: [200, 100, 50, 25],
+    6: [200, 150, 100, 50, 25]
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -162,7 +164,11 @@ class MainScene extends Scene3D {
         instance.third.load.preload("bomber-firelance", './assets/models/fire-lance.fbx');
         instance.third.load.preload("bomber-dynamite", './assets/models/dynamite.fbx');
         instance.third.load.preload("bomber-bomb", './assets/models/bomb.fbx');
-        instance.third.load.preload("bullet", "./assets/models/bullet.fbx")
+        instance.third.load.preload("jetpack-enemy", './assets/enemies/jetpackEnemy/model.fbx');
+        instance.third.load.preload("jetpack-jetpack", './assets/models/jetpack.fbx');
+        instance.third.load.preload("jetpack-rifle", './assets/models/rifle.fbx');
+        instance.third.load.preload("bullet", "./assets/models/bullet.fbx");
+        instance.third.load.preload("laser", "./assets/models/laser.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');
         instance.third.load.preload('metal', './assets/images/ice.png');
         instance.third.load.preload('cobblestone', './assets/images/cobblestone.jpg');
@@ -172,7 +178,7 @@ class MainScene extends Scene3D {
         instance.third.load.preload('crossbow', './assets/weapons/crossbow.fbx');
         instance.third.load.preload('boomerang', './assets/weapons/boomerang.fbx');
         (async() => {
-            const particles = ["smoke", "dynamite", "explosion"];
+            const particles = ["smoke", "dynamite", "explosion", "jetpack"];
             for (const particle of particles) {
                 const text = await fetch(`./assets/particles/${particle}.json`);
                 const json = await text.json();

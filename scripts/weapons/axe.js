@@ -2,7 +2,7 @@ class Axe extends Weapon {
     constructor() {
         super({
             minDamage: 5,
-            maxDamage: 15
+            maxDamage: 10
         });
     }
     primaryAttack() {
@@ -28,7 +28,7 @@ class Axe extends Weapon {
             this.handleSwing({
                 rightBound: Math.PI / 4,
                 leftBound: -Math.PI / 4,
-                buff: 7,
+                buff: 4,
                 verticalKnockback: 3.5,
                 knockback: 1.5,
                 reach: 4

@@ -14,7 +14,7 @@ class Bow extends Weapon {
     }
     secondaryAttack() {
         //if (cooldown < 10) {
-        this.charge++;
+        this.charge += 0.5;
         //targetYRot = -Math.PI / 2;
         //targetXRot = -Math.PI / 2 + 0.8;
         //targetXOffset = 0.3;
@@ -35,7 +35,7 @@ class Bow extends Weapon {
     }
     update() {
         if (mainScene.input.mousePointer.rightButtonDown()) {
-            this.charge++;
+            this.charge += 0.5;
             mainScene.sword.bowArrow.visible = true;
             mainScene.sword.scale.set(0.00045, 0.00045, 0.00045 + Math.min(this.charge, 60) / 240000);
         } else {

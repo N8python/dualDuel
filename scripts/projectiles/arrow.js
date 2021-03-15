@@ -13,9 +13,11 @@ class Arrow {
         target,
         pool = false,
         speed = 10,
-        bullet
+        bullet,
+        laser
     }) {
         this.bullet = bullet;
+        this.laser = laser;
         this.arrow = new ExtendedObject3D();
         this.arrow.add(model.clone());
         if (bullet) {
@@ -35,13 +37,13 @@ class Arrow {
         setTimeout(() => {
             this.arrow.body.transform();
             this.arrow.body.setFriction(1);
-            this.arrow.body.setVelocity(xVel ? xVel : speed * Math.sin(angle), yVel ? yVel : this.arrow.body.velocity.y + bullet ? (this.arrow.position.distanceTo(target.position) * 0.25 + 0.3) : (this.arrow.position.distanceTo(target.position) * 0.325 + 0.35), zVel ? zVel : speed * Math.cos(angle));
+            this.arrow.body.setVelocity(xVel ? xVel : speed * Math.sin(angle), yVel ? yVel : this.arrow.body.velocity.y + bullet ? (this.arrow.position.distanceTo(target.position) * (laser ? 0.2 : 0.25) + (laser ? 0.15 : 0.3)) : (this.arrow.position.distanceTo(target.position) * 0.325 + 0.35), zVel ? zVel : speed * Math.cos(angle));
         });
         if (pool) {
             arrowPool.push(this);
         }
         this.arrow.body.on.collision((otherObject, event) => {
-            if ((otherObject.name === "ground") && event === "collision") {
+            if ((otherObject.name === "ground" || this.laser) && event === "collision") {
                 this.arrow.didDamage = true;
                 this.arrow.visible = false;
                 objects.splice(objects.indexOf(this.arrow), 1);
@@ -64,7 +66,9 @@ class Arrow {
                 targetCooldown = 100;
             } else {
                 if (this.target === player) {
-                    if (this.bullet) {
+                    if (this.laser) {
+                        playerTakeDamage(1 + Math.random() * 1, "ranged");
+                    } else if (this.bullet) {
                         playerTakeDamage(2 + Math.random() * 4, "ranged");
                     } else {
                         playerTakeDamage(5 + Math.random() * 8, "ranged");
@@ -98,9 +102,9 @@ class Arrow {
                 }
                 this.arrow.body.transform();
                 if (this.velocity) {
-                    this.target.body.setVelocity(this.target.body.velocity.x + this.velocity.x * 0.5, this.target.body.velocity.y + this.velocity.y * 0.5, this.target.body.velocity.z + this.velocity.z * 0.5);
+                    this.target.body.setVelocity(this.target.body.velocity.x + this.velocity.x * 0.5 * (this.laser ? 0.33 : 1), this.target.body.velocity.y + this.velocity.y * 0.5 * (this.laser ? 0.33 : 1), this.target.body.velocity.z + this.velocity.z * 0.5 * (this.laser ? 0.33 : 1));
                 } else {
-                    this.target.body.setVelocity(this.target.body.velocity.x + 4 * Math.sin(this.arrow.body.rotation.y), this.target.body.velocity.y + 3, this.target.body.velocity.z + 4 * Math.cos(this.arrow.body.rotation.y));
+                    this.target.body.setVelocity(this.target.body.velocity.x + 4 * Math.sin(this.arrow.body.rotation.y) * (this.laser ? 0.33 : 1), this.target.body.velocity.y + 3 * (this.laser ? 0.33 : 1), this.target.body.velocity.z + 4 * Math.cos(this.arrow.body.rotation.y) * (this.laser ? 0.33 : 1));
                 }
             }
             this.arrow.visible = false;
