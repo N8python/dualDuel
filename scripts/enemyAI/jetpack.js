@@ -1,6 +1,6 @@
 class JetpackEnemyAI extends EnemyAI {
     constructor(enemy) {
-        super(enemy, 100);
+        super(enemy, 150);
         this.enemy.animation.play('Idle');
         this.enemy.cooldown = 0;
         this.enemy.aggro = false;

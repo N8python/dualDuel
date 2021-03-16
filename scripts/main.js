@@ -30,7 +30,8 @@ let levelAIs = {
     3: KnightEnemyAI,
     4: PistolEnemyAI,
     5: BomberEnemyAI,
-    6: JetpackEnemyAI
+    6: JetpackEnemyAI,
+    7: WizardEnemyAI
 }
 let weaponClasses = {
     "sword": Sword,
@@ -45,7 +46,8 @@ let levelCoinYield = {
     3: [100, 50, 25, 15],
     4: [125, 75, 30, 15],
     5: [200, 100, 50, 25],
-    6: [200, 150, 100, 50, 25]
+    6: [200, 150, 100, 50, 25],
+    7: [225, 150, 100, 50, 30]
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -104,7 +106,7 @@ function futurePlayerPos(seconds, transform = true) {
 function dealExplodeDamage(position, damage, decayRate, strength = 6, fromPlayer) {
     playerTakeDamage(damage / (decayRate ** player.position.distanceTo(position)), "explosion");
     player.body.setVelocity(player.body.velocity.x + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z), player.body.velocity.y + Math.max(4 - player.position.distanceTo(position), 0), player.body.velocity.z + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z));
-    if (!mainScene.enemy.isBomber || fromPlayer) {
+    if (!(mainScene.enemy.isBomber || mainScene.enemy.isWizard) || fromPlayer) {
         mainScene.enemy.health -= damage / (decayRate ** mainScene.enemy.position.distanceTo(position));
         mainScene.enemy.health = Math.max(mainScene.enemy.health, 0);
         const enemy = mainScene.enemy;
@@ -128,7 +130,7 @@ function playerTakeDamage(damage, type) {
         reduction = 0;
     }
     player.health -= damage * (1 - reduction);
-    if (items.armor[localProxy.playerArmor] && items.armor[localProxy.playerArmor].stats.spikes && type === "melee") {
+    if (items.armor[localProxy.playerArmor] && items.armor[localProxy.playerArmor].stats.spikes && type === "melee" && player.fire < 0) {
         mainScene.enemy.health -= items.armor[localProxy.playerArmor].stats.spikes();
     }
 }
@@ -167,6 +169,8 @@ class MainScene extends Scene3D {
         instance.third.load.preload("jetpack-enemy", './assets/enemies/jetpackEnemy/model.fbx');
         instance.third.load.preload("jetpack-jetpack", './assets/models/jetpack.fbx');
         instance.third.load.preload("jetpack-rifle", './assets/models/rifle.fbx');
+        instance.third.load.preload("wizard-enemy", './assets/enemies/wizardEnemy/model.fbx');
+        instance.third.load.preload("wizard-hat", './assets/models/witch-hat.fbx');
         instance.third.load.preload("bullet", "./assets/models/bullet.fbx");
         instance.third.load.preload("laser", "./assets/models/laser.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');
@@ -178,7 +182,7 @@ class MainScene extends Scene3D {
         instance.third.load.preload('crossbow', './assets/weapons/crossbow.fbx');
         instance.third.load.preload('boomerang', './assets/weapons/boomerang.fbx');
         (async() => {
-            const particles = ["smoke", "dynamite", "explosion", "jetpack"];
+            const particles = ["smoke", "dynamite", "explosion", "jetpack", "ice", "fire", "air", "shield"];
             for (const particle of particles) {
                 const text = await fetch(`./assets/particles/${particle}.json`);
                 const json = await text.json();
@@ -191,7 +195,10 @@ class MainScene extends Scene3D {
                         onUpdate: () => {},
                         onEnd: () => {},
                     });
-                    particles.emitters[0].currentEmitTime = 1000;
+                    // particles.emitters[0].currentEmitTime = 1000;
+                    particles.emitters.forEach(emitter => {
+                        emitter.currentEmitTime = 1000;
+                    });
                     setInterval(() => {
                         particles.update();
                         //console.log(system.emitters[0].particles.length);
@@ -236,6 +243,8 @@ class MainScene extends Scene3D {
         instance.player = instance.third.physics.add.sphere({ z: -5 });
         instance.player.health = 100;
         instance.player.maxHealth = 100;
+        instance.player.ice = 0;
+        instance.player.fire = 0;
         if (localProxy.playerHat === "featheredCap") {
             instance.player.health *= 0.75;
             instance.player.maxHealth *= 0.75;
@@ -383,6 +392,8 @@ class MainScene extends Scene3D {
         objects.splice(objects.indexOf(this.enemy), 1);*/
         this.player.body.setCollisionFlags(2);
         this.player.health = this.player.maxHealth;
+        this.player.ice = 0;
+        this.player.fire = 0;
         // set the new position
         this.player.position.set(0, 0, -5);
         this.player.body.needUpdate = true;
@@ -434,6 +445,8 @@ class MainScene extends Scene3D {
             healthBars.clearRect(0, 0, 300, 300);
             return;
         }
+        this.player.ice--;
+        this.player.fire--;
         jumpCooldown -= 1;
         if (this.player.position.y < -10 && gameOverMessage.innerHTML === "") {
             resetButton.style.display = "block";
@@ -457,6 +470,12 @@ class MainScene extends Scene3D {
         healthBars.fillStyle = "black";
         healthBars.fillRect(76, 1, 158, 28);
         healthBars.fillStyle = `rgb(${255 * (1 - (player.health / player.maxHealth))}, ${255 * (player.health / player.maxHealth)}, 0)`;
+        if (player.ice > 0) {
+            healthBars.fillStyle = "cyan";
+        }
+        if (player.fire > 0) {
+            healthBars.fillStyle = "orange";
+        }
         healthBars.fillRect(80, 5, 150 * (player.health / player.maxHealth), 20);
         healthBars.fillStyle = "black";
         healthBars.fillRect(76, 36, 158, 28);
@@ -559,6 +578,12 @@ class MainScene extends Scene3D {
         }
         if (this.weaponController.charge > 0) {
             speed *= 0.25;
+        }
+        if (player.ice > 0) {
+            speed *= 0.33;
+        }
+        if (player.fire > 0 && player.health > 0) {
+            playerTakeDamage(0.25, "melee")
         }
         if (this.keys.w.isDown) {
             velocityUpdate[0] += Math.sin(theta) * speed;
