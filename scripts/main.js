@@ -31,7 +31,8 @@ let levelAIs = {
     4: PistolEnemyAI,
     5: BomberEnemyAI,
     6: JetpackEnemyAI,
-    7: WizardEnemyAI
+    7: WizardEnemyAI,
+    8: LeaperEnemyAI
 }
 let weaponClasses = {
     "sword": Sword,
@@ -47,7 +48,8 @@ let levelCoinYield = {
     4: [125, 75, 30, 15],
     5: [200, 100, 50, 25],
     6: [200, 150, 100, 50, 25],
-    7: [225, 150, 100, 50, 30]
+    7: [225, 150, 100, 50, 30],
+    8: [250, 175, 125, 75, 50]
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -171,6 +173,8 @@ class MainScene extends Scene3D {
         instance.third.load.preload("jetpack-rifle", './assets/models/rifle.fbx');
         instance.third.load.preload("wizard-enemy", './assets/enemies/wizardEnemy/model.fbx');
         instance.third.load.preload("wizard-hat", './assets/models/witch-hat.fbx');
+        instance.third.load.preload("leaper-enemy", './assets/enemies/leaperEnemy/model.fbx');
+        instance.third.load.preload("leaper-hammer", './assets/models/hammer.fbx');
         instance.third.load.preload("bullet", "./assets/models/bullet.fbx");
         instance.third.load.preload("laser", "./assets/models/laser.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');

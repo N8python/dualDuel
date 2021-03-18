@@ -101,7 +101,7 @@ class Boomerang extends Weapon {
             targetCooldown = 0;
         }
         projectiles.forEach(projectile => {
-            if (projectile instanceof Rang && this.throwCooldown < 1) {
+            if (projectile instanceof Rang && !projectile.fromEnemy && this.throwCooldown < 1) {
                 if (projectile.rang.position.distanceTo(player.position) < 1.5) {
                     this.thrown = false;
                     mainScene.sword.rang.visible = true;
@@ -120,7 +120,7 @@ class Boomerang extends Weapon {
                     mainScene.third.scene.children.splice(mainScene.third.scene.children.indexOf(projectile.rang), 1);
                 }
             }
-        })
+        });
     }
     static loadWeapon(instance) {
         instance.third.load.fbx("boomerang").then(object => {
