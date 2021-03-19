@@ -161,6 +161,12 @@ const items = {
             image: "boomerang.png",
             description: "Can be thrown in a straight line or arc. Always returns to thrower. Can block attacks as well.",
             cost: 1000
+        },
+        claw: {
+            title: "Claw",
+            image: "claw.png",
+            description: "ATTACK WITH THE ANCIENT POWER OF CELESTIALS. Basically the same as a sword, but it looks cooler (and does more damage)",
+            cost: 1500
         }
     }
 }

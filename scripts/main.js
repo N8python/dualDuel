@@ -32,7 +32,8 @@ let levelAIs = {
     5: BomberEnemyAI,
     6: JetpackEnemyAI,
     7: WizardEnemyAI,
-    8: LeaperEnemyAI
+    8: LeaperEnemyAI,
+    9: MissileEnemyAI
 }
 let weaponClasses = {
     "sword": Sword,
@@ -40,6 +41,7 @@ let weaponClasses = {
     "bow": Bow,
     "crossbow": Crossbow,
     "boomerang": Boomerang,
+    "claw": Claw
 }
 let levelCoinYield = {
     1: [50, 25, 10],
@@ -49,7 +51,8 @@ let levelCoinYield = {
     5: [200, 100, 50, 25],
     6: [200, 150, 100, 50, 25],
     7: [225, 150, 100, 50, 30],
-    8: [250, 175, 125, 75, 50]
+    8: [250, 175, 125, 75, 50],
+    9: [250, 175, 125, 75]
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -105,9 +108,11 @@ function futurePlayerPos(seconds, transform = true) {
     }
 }
 
-function dealExplodeDamage(position, damage, decayRate, strength = 6, fromPlayer) {
-    playerTakeDamage(damage / (decayRate ** player.position.distanceTo(position)), "explosion");
-    player.body.setVelocity(player.body.velocity.x + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z), player.body.velocity.y + Math.max(4 - player.position.distanceTo(position), 0), player.body.velocity.z + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z));
+function dealExplodeDamage(position, damage, decayRate, strength = 6, fromPlayer, damagePlayer = true) {
+    if (damagePlayer) {
+        playerTakeDamage(damage / (decayRate ** player.position.distanceTo(position)), "explosion");
+        player.body.setVelocity(player.body.velocity.x + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z), player.body.velocity.y + Math.max(4 - player.position.distanceTo(position), 0), player.body.velocity.z + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z));
+    }
     if (!(mainScene.enemy.isBomber || mainScene.enemy.isWizard) || fromPlayer) {
         mainScene.enemy.health -= damage / (decayRate ** mainScene.enemy.position.distanceTo(position));
         mainScene.enemy.health = Math.max(mainScene.enemy.health, 0);
@@ -175,6 +180,11 @@ class MainScene extends Scene3D {
         instance.third.load.preload("wizard-hat", './assets/models/witch-hat.fbx');
         instance.third.load.preload("leaper-enemy", './assets/enemies/leaperEnemy/model.fbx');
         instance.third.load.preload("leaper-hammer", './assets/models/hammer.fbx');
+        instance.third.load.preload("missile-enemy", './assets/enemies/missileEnemy/model.fbx');
+        instance.third.load.preload("missile", './assets/models/missile.fbx');
+        instance.third.load.preload("missile-launcher", './assets/models/missile-launcher.fbx');
+        instance.third.load.preload("missile-rifle", './assets/models/thicc-rifle.fbx');
+        instance.third.load.preload("lead-bullet", './assets/models/lead-bullet.fbx');
         instance.third.load.preload("bullet", "./assets/models/bullet.fbx");
         instance.third.load.preload("laser", "./assets/models/laser.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');
@@ -185,8 +195,9 @@ class MainScene extends Scene3D {
         instance.third.load.preload('bow', './assets/weapons/bow.fbx');
         instance.third.load.preload('crossbow', './assets/weapons/crossbow.fbx');
         instance.third.load.preload('boomerang', './assets/weapons/boomerang.fbx');
+        instance.third.load.preload('claw', './assets/weapons/claw.fbx');
         (async() => {
-            const particles = ["smoke", "dynamite", "explosion", "jetpack", "ice", "fire", "air", "shield"];
+            const particles = ["smoke", "dynamite", "explosion", "jetpack", "ice", "fire", "air", "shield", "boom"];
             for (const particle of particles) {
                 const text = await fetch(`./assets/particles/${particle}.json`);
                 const json = await text.json();

@@ -20,6 +20,7 @@ class Arrow {
         this.laser = laser;
         this.arrow = new ExtendedObject3D();
         this.arrow.add(model.clone());
+        this.arrow.isArrow = true;
         if (bullet) {
             this.arrow.scale.set(0.025, 0.025, 0.05);
         } else {

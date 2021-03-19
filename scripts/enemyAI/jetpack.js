@@ -8,7 +8,7 @@ class JetpackEnemyAI extends EnemyAI {
         this.enemy.shootTick = 0;
     }
     update(target, ground) {
-        const futurePos = futurePlayerPos(this.enemy.position.distanceTo(player.position) / 8);
+        const futurePos = futurePlayerPos(this.enemy.position.distanceTo(player.position) / 20);
         super.update(target, ground);
         this.stayUp(1);
         if (this.enemy.health === 0) {
