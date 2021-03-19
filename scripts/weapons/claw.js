@@ -9,6 +9,7 @@ class Claw extends Weapon {
         if (cooldown < 10 && currXRot < 0.01) {
             targetXRot = -Math.PI / 2 + 0.175;
             targetYRot = 0;
+            targetCooldown = 20;
         }
     }
     secondaryAttack() {
@@ -68,6 +69,9 @@ class Claw extends Weapon {
                     rightBound: Math.PI / 6,
                     leftBound: 0
                 });
+            }
+            if (slashing) {
+                targetCooldown = 125;
             }
             targetXRot = 0;
         }
