@@ -10,18 +10,31 @@
     <script src="lib/enable3d.phaserExtension.0.22.0-dev.1.min.js"></script>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Stick&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="styles/styles.css">
 </head>
 
-<body>
+<body style="overflow: hidden;">
     <canvas style="position: absolute;margin:0px;left:16px;top:16px;z-index:10" id="healthBars" width="300px" height="300px"></canvas>
     <h1 id="loading" style="color:rgb(255, 255, 255);font-size:50px;position: absolute;z-index: 20;top:50%;left:50%;transform:translate(-50%, -50%);"></h1>
     <div id="menu">
     </div>
     <h1 id="gameOverMessage" style="color:rgb(255, 255, 255);font-size:80px;position: absolute;z-index: 20;top:40%;left:50%;transform:translate(-50%, -50%);"></h1>
-    <span style="position:absolute;z-index:5;left:calc(100% - 190px);"><img width="64px" src="assets/images/coin.png"><span style="font-size:42px;position:relative;bottom:16px;" id="coinDisplay">0000</span></span>
+    <span style="position:absolute;z-index:5;left:calc(100% - 190px);"><img width="64px" src="assets/images/coin.png"><span style="font-size:42px;position:relative;top:12px;" id="coinDisplay">0000</span></span>
     <button style="position: absolute;left:50%;top:60%;transform:translate(-50%, -50%);display:none;z-index:20;" class="btn" id="resetButton">Back</button>
+    <div style="z-index:10;" id="instructions" class="w3-modal">
+        <div class="w3-modal-content w3-animate-zoom">
+            <div class="w3-container w3-padding">
+                <span onclick="document.getElementById('instructions').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                <img style="position:relative; right:10px" src="assets/images/instructions.png"><br>
+                <p class="w3-large">It is your task to pick up your sword, wield it well, and use it to fell various enemies.</p>
+                <p class="w3-large"><code>Click</code> to <em><b>attack</b></em> with your sword.<br> <code>Right Click</code> to <em><b>block</b></em> with your sword.<br> <code>Shift + Click</code> to <em><b>slash</b></em> with your sword.</p>
+                <p class="w3-large">Other weapons have attacks for the click, right click, and shift+click as well. The crossbow also has an additional attack with shift+right click.</p>
+                <p class="w3-large">Make sure your <em><b>health</b></em> doesn't drop to zero.</p>
+                <p class="w3-large">Buy <em><b>weapons</b></em> and <em><b>weapons</b></em> in the <em><b>shop</b></em>!</p>
+            </div>
+        </div>
+    </div>
     <script src="scripts/constants.js"></script>
     <script src="lib/three-nebula.js"></script>
     <script src="scripts/proxy.js"></script>

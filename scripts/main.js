@@ -727,8 +727,10 @@ const shop = () => {
     armorDisplay.style.transform = "translate(-50%, -50%)";
     armorDisplay.innerHTML = `<h1 style="margin-left:8px;margin-top:0px;margin-bottom:0px;">Armor:</h1>`;
     const armorImage = document.createElement("img");
-    armorImage.style.width = "186px";
-    armorImage.style.height = "350px";
+    armorImage.style.width = "180px";
+    armorImage.style.height = "340px";
+    armorImage.style.position = "relative";
+    armorImage.style.bottom = "4px";
     if (localProxy.playerArmor !== "none") {
         armorImage.src = `assets/images/items/armor/${items.armor[localProxy.playerArmor].image}`;
     }
@@ -740,12 +742,14 @@ const shop = () => {
     hatDisplay.style.zIndex = 5;
     hatDisplay.style.border = "4px solid black";
     hatDisplay.style.top = "calc(45% - 100px)";
-    hatDisplay.style.left = "calc(25% + 190px)";
+    hatDisplay.style.left = "calc(25% + 182px)";
     hatDisplay.style.transform = "translate(-50%, -50%)";
     hatDisplay.innerHTML = `<h1 style="margin-left:8px;margin-top:0px;margin-bottom:0px;">Hat:</h1>`;
     const hatImage = document.createElement("img");
     hatImage.style.width = "186px";
     hatImage.style.height = "150px";
+    hatImage.style.position = "relative";
+    hatImage.style.bottom = "15px";
     if (localProxy.playerHat !== "none") {
         hatImage.src = `assets/images/items/hats/${items.hats[localProxy.playerHat].image}`;
     }
@@ -757,13 +761,13 @@ const shop = () => {
     itemDisplay.style.zIndex = 5;
     itemDisplay.style.border = "4px solid black";
     itemDisplay.style.borderTop = "0px solid black";
-    itemDisplay.style.top = "calc(45% + 102px)";
-    itemDisplay.style.left = "calc(25% + 190px)";
+    itemDisplay.style.top = "calc(45% + 100px)";
+    itemDisplay.style.left = "calc(25% + 182px)";
     itemDisplay.style.transform = "translate(-50%, -50%)";
     itemDisplay.innerHTML = `<h1 style="margin-left:8px;margin-top:0px;margin-bottom:0px;">Item:</h1>`;
     const itemImage = document.createElement("img");
-    itemImage.style.width = "186px";
-    itemImage.style.height = "150px";
+    itemImage.style.width = "175px";
+    itemImage.style.height = "120px";
     if (localProxy.playerItem !== "none") {
         itemImage.src = `assets/images/items/items/${items.items[localProxy.playerItem].image}`;
     }
@@ -774,7 +778,7 @@ const shop = () => {
     storeSelect.style.position = "absolute";
     storeSelect.style.zIndex = 5;
     storeSelect.style.top = "45%";
-    storeSelect.style.left = "calc(25% + 3 * 186px + 28px - 50px)";
+    storeSelect.style.left = "calc(25% + 3 * 186px + 28px - 66px)";
     storeSelect.style.border = "4px solid black";
     storeSelect.style.transform = "translate(-50%, -50%)";
     const categories = ["armor", "hats", "items"];
@@ -885,8 +889,20 @@ const mainMenu = () => {
     shopButton.onclick = () => {
         shop();
     }
+    const instructionButton = document.createElement("button");
+    instructionButton.classList.add("btn");
+    instructionButton.style.zIndex = 5;
+    instructionButton.style.position = "absolute";
+    instructionButton.style.left = "50%";
+    instructionButton.style.top = "42%";
+    instructionButton.style.transform = "translate(-50%, -50%)";
+    instructionButton.innerHTML = "Instructions";
+    instructionButton.onclick = () => {
+        document.getElementById("instructions").style.display = "block";
+    }
     menu.appendChild(levelSelectButton);
     menu.appendChild(shopButton);
+    menu.appendChild(instructionButton);
 }
 mainMenu();
 resetButton.onclick = () => {
