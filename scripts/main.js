@@ -349,7 +349,7 @@ class MainScene extends Scene3D {
             a: instance.input.keyboard.addKey('a'),
             s: instance.input.keyboard.addKey('s'),
             d: instance.input.keyboard.addKey('d'),
-            Alt: instance.input.keyboard.addKey('Alt')
+            Alt: instance.input.keyboard.addKey('Shift')
         }
     }
     handleSwing() {
