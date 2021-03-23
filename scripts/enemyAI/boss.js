@@ -254,7 +254,7 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 40) {
-                    if (this.enemy.position.distanceTo(player.position) < 4.5) {
+                    if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
                         } else {
@@ -269,7 +269,7 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 75) {
-                    if (this.enemy.position.distanceTo(player.position) < 4.5) {
+                    if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
                         } else {
@@ -284,7 +284,7 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 60) {
-                    if (this.enemy.position.distanceTo(player.position) < 4.5) {
+                    if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
                         } else {
@@ -299,7 +299,7 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 60) {
-                    if (this.enemy.position.distanceTo(player.position) < 4.5) {
+                    if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
                         } else {
@@ -318,7 +318,7 @@ class BossEnemyAI extends EnemyAI {
                     this.moveYDir(4);
                 }
                 if (this.enemy.attackTick === 75) {
-                    if (this.enemy.position.distanceTo(player.position) < 4.5) {
+                    if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
                         } else {
