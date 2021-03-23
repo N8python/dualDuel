@@ -83,6 +83,9 @@ if (!localProxy.levelWins) {
 if (!localProxy.maxLevelUnlocked) {
     localProxy.maxLevelUnlocked = 1;
 }
+if (localProxy.mouseSensitivity === undefined) {
+    localProxy.mouseSensitivity = 1;
+}
 const hardReset = () => {
     localProxy.playerArmor = "none";
     localProxy.playerHat = "none";
@@ -336,7 +339,7 @@ class MainScene extends Scene3D {
                 if (localProxy.playerHat === "scoutsCap") {
                     multiplier += 0.25;
                 }
-                instance.firstPersonControls.update(pointer.movementX * 0.5 * sensitivity * multiplier, pointer.movementY * sensitivity * 0.5 * multiplier);
+                instance.firstPersonControls.update(pointer.movementX * 0.5 * localProxy.mouseSensitivity * sensitivity * multiplier, pointer.movementY * localProxy.mouseSensitivity * sensitivity * 0.5 * multiplier);
             }
         })
         instance.events.on('update', () => {
@@ -865,6 +868,86 @@ const shop = () => {
     menu.appendChild(itemDisplay);
     menu.appendChild(backButton);
 }
+const settingsMenu = () => {
+    menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/settings.png">`;
+    const sensitivityLabel = document.createElement("label");
+    sensitivityLabel.innerHTML = "Mouse Sensitivity: ";
+    sensitivityLabel.style.transform = "translate(-50%, -50%)";
+    sensitivityLabel.style.zIndex = 5;
+    sensitivityLabel.style.position = "absolute";
+    sensitivityLabel.style.top = "20%";
+    sensitivityLabel.style.left = "calc(50% - 100px)";
+    const sensitivitySlider = document.createElement("input");
+    sensitivitySlider.setAttribute("type", "range");
+    sensitivitySlider.setAttribute("min", "0");
+    sensitivitySlider.setAttribute("max", "100");
+    sensitivitySlider.value = localProxy.mouseSensitivity * 100;
+    sensitivitySlider.classList.add("slider");
+    sensitivitySlider.style.transform = "translate(-50%, -50%)";
+    sensitivitySlider.style.zIndex = 5;
+    sensitivitySlider.style.width = "200px";
+    sensitivitySlider.style.position = "absolute";
+    sensitivitySlider.style.top = "calc(20% + 2px)";
+    sensitivitySlider.style.left = "calc(50% + 70px)";
+    sensitivitySlider.onchange = () => {
+        localProxy.mouseSensitivity = sensitivitySlider.value / 100;
+    };
+    const sfxLabel = document.createElement("label");
+    sfxLabel.innerHTML = "SFX Volume: ";
+    sfxLabel.style.transform = "translate(-50%, -50%)";
+    sfxLabel.style.zIndex = 5;
+    sfxLabel.style.position = "absolute";
+    sfxLabel.style.top = "25%";
+    sfxLabel.style.left = "calc(50% - 100px)";
+    const sfxSlider = document.createElement("input");
+    sfxSlider.setAttribute("type", "range");
+    sfxSlider.setAttribute("min", "0");
+    sfxSlider.setAttribute("max", "100");
+    sfxSlider.classList.add("slider");
+    sfxSlider.style.transform = "translate(-50%, -50%)";
+    sfxSlider.style.zIndex = 5;
+    sfxSlider.style.width = "200px";
+    sfxSlider.style.position = "absolute";
+    sfxSlider.style.top = "calc(25% + 2px)";
+    sfxSlider.style.left = "calc(50% + 70px)";
+    const musicLabel = document.createElement("label");
+    musicLabel.innerHTML = "Music Volume: ";
+    musicLabel.style.transform = "translate(-50%, -50%)";
+    musicLabel.style.zIndex = 5;
+    musicLabel.style.position = "absolute";
+    musicLabel.style.top = "30%";
+    musicLabel.style.left = "calc(50% - 100px)";
+    const musicSlider = document.createElement("input");
+    musicSlider.setAttribute("type", "range");
+    musicSlider.setAttribute("min", "0");
+    musicSlider.setAttribute("max", "100");
+    musicSlider.classList.add("slider");
+    musicSlider.style.transform = "translate(-50%, -50%)";
+    musicSlider.style.zIndex = 5;
+    musicSlider.style.width = "200px";
+    musicSlider.style.position = "absolute";
+    musicSlider.style.top = "calc(30% + 2px)";
+    musicSlider.style.left = "calc(50% + 70px)";
+    const backButton = document.createElement("button");
+    backButton.classList.add("btn");
+    backButton.zIndex = 5;
+    backButton.style.position = "absolute";
+    backButton.style.left = "50%";
+    backButton.style.top = "45%";
+    backButton.style.transform = "translate(-50%, -50%)";
+    backButton.innerHTML = "Back";
+    backButton.style.zIndex = 5;
+    backButton.onclick = () => {
+        mainMenu();
+    }
+    menu.appendChild(backButton);
+    menu.appendChild(sensitivityLabel);
+    menu.appendChild(sensitivitySlider);
+    menu.appendChild(sfxLabel);
+    menu.appendChild(sfxSlider);
+    menu.appendChild(musicLabel);
+    menu.appendChild(musicSlider);
+}
 const mainMenu = () => {
     menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/logo.gif">`;
     const levelSelectButton = document.createElement("button");
@@ -900,9 +983,21 @@ const mainMenu = () => {
     instructionButton.onclick = () => {
         document.getElementById("instructions").style.display = "block";
     }
+    const settingsButton = document.createElement("button");
+    settingsButton.classList.add("btn");
+    settingsButton.style.zIndex = 5;
+    settingsButton.style.position = "absolute";
+    settingsButton.style.left = "50%";
+    settingsButton.style.top = "53%";
+    settingsButton.style.transform = "translate(-50%, -50%)";
+    settingsButton.innerHTML = "Settings";
+    settingsButton.onclick = () => {
+        settingsMenu();
+    }
     menu.appendChild(levelSelectButton);
     menu.appendChild(shopButton);
     menu.appendChild(instructionButton);
+    menu.appendChild(settingsButton);
 }
 mainMenu();
 resetButton.onclick = () => {
