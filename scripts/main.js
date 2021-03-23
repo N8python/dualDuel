@@ -33,7 +33,8 @@ let levelAIs = {
     6: JetpackEnemyAI,
     7: WizardEnemyAI,
     8: LeaperEnemyAI,
-    9: MissileEnemyAI
+    9: MissileEnemyAI,
+    10: BossEnemyAI
 }
 let weaponClasses = {
     "sword": Sword,
@@ -52,7 +53,8 @@ let levelCoinYield = {
     6: [200, 150, 100, 50, 25],
     7: [225, 150, 100, 50, 30],
     8: [250, 175, 125, 75, 50],
-    9: [250, 175, 125, 75]
+    9: [250, 175, 125, 75],
+    10: [500, 250, 125, 100]
 }
 let currLevel;
 const healthBars = document.getElementById("healthBars").getContext("2d");
@@ -113,11 +115,11 @@ function dealExplodeDamage(position, damage, decayRate, strength = 6, fromPlayer
         playerTakeDamage(damage / (decayRate ** player.position.distanceTo(position)), "explosion");
         player.body.setVelocity(player.body.velocity.x + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z), player.body.velocity.y + Math.max(4 - player.position.distanceTo(position), 0), player.body.velocity.z + Math.max(4 - player.position.distanceTo(position), 0) * Math.atan2(player.position.x - position.x, player.position.z - position.z));
     }
-    if (!(mainScene.enemy.isBomber || mainScene.enemy.isWizard) || fromPlayer) {
+    if (!(mainScene.enemy.isBomber || mainScene.enemy.isWizard || mainScene.enemy.isBoss) || fromPlayer) {
         mainScene.enemy.health -= damage / (decayRate ** mainScene.enemy.position.distanceTo(position));
         mainScene.enemy.health = Math.max(mainScene.enemy.health, 0);
         const enemy = mainScene.enemy;
-        mainScene.enemy.body.setVelocity(enemy.body.velocity.x + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z), enemy.body.velocity.y + Math.max(strength * 0.25 - enemy.position.distanceTo(position), 0), enemy.body.velocity.z + Math.max((strength - 2) - enemy.position.distanceTo(position), 0) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z));
+        mainScene.enemy.body.setVelocity(enemy.body.velocity.x + (Math.max((strength - 2) - enemy.position.distanceTo(position), 0) / (enemy.isBoss ? 3 : 1)) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z), enemy.body.velocity.y + Math.max(strength * 0.25 - enemy.position.distanceTo(position), 0), enemy.body.velocity.z + (Math.max((strength - 2) - enemy.position.distanceTo(position), 0) / (enemy.isBoss ? 3 : 1)) * Math.atan2(enemy.position.x - position.x, enemy.position.z - position.z));
     }
 }
 
@@ -184,10 +186,13 @@ class MainScene extends Scene3D {
         instance.third.load.preload("missile", './assets/models/missile.fbx');
         instance.third.load.preload("missile-launcher", './assets/models/missile-launcher.fbx');
         instance.third.load.preload("missile-rifle", './assets/models/thicc-rifle.fbx');
+        instance.third.load.preload("boss-enemy", './assets/enemies/bossEnemy/model.fbx');
+        instance.third.load.preload("boss-bolt", './assets/models/lightning.fbx');
         instance.third.load.preload("lead-bullet", './assets/models/lead-bullet.fbx');
         instance.third.load.preload("bullet", "./assets/models/bullet.fbx");
         instance.third.load.preload("laser", "./assets/models/laser.fbx")
         instance.third.load.preload("shield", './assets/models/shield.fbx');
+        //instance.third.load.preload("pot", "./assets/models/pot.fbx");
         instance.third.load.preload('metal', './assets/images/ice.png');
         instance.third.load.preload('cobblestone', './assets/images/cobblestone.jpg');
         instance.third.load.preload('sword', './assets/weapons/sword.fbx');
@@ -197,7 +202,7 @@ class MainScene extends Scene3D {
         instance.third.load.preload('boomerang', './assets/weapons/boomerang.fbx');
         instance.third.load.preload('claw', './assets/weapons/claw.fbx');
         (async() => {
-            const particles = ["smoke", "dynamite", "explosion", "jetpack", "ice", "fire", "air", "shield", "boom"];
+            const particles = ["smoke", "dynamite", "explosion", "jetpack", "ice", "fire", "air", "shield", "boom", "shockwave"];
             for (const particle of particles) {
                 const text = await fetch(`./assets/particles/${particle}.json`);
                 const json = await text.json();
@@ -293,6 +298,12 @@ class MainScene extends Scene3D {
             })
             instance.third.add.existing(instance.sword);
             levelAIs[currLevel].loadEnemy(instance);
+        });*/
+        /*instance.third.load.fbx("pot").then(object => {
+            object.scale.set(0.01, 0.01, 0.01)
+            object.position.set(0, 1, 0);
+            instance.third.add.existing(object);
+            instance.third.physics.add.existing(object, { shape: 'hull', color: 'red' });
         });*/
         weaponClasses[localProxy.playerItem].loadWeapon(instance);
 

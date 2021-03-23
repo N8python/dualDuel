@@ -10,7 +10,8 @@ class Dynamite {
         zVel,
         fromPlayer,
         antigravity,
-        homing
+        homing,
+        lightning
     }) {
         this.homing = homing;
         this.antigravity = antigravity;
@@ -18,8 +19,12 @@ class Dynamite {
         this.dynamite.add(model.clone());
         this.dynamite.position.set(x, y, z);
         this.dynamite.scale.set(0.25, 0.25, 0.25);
+        if (lightning) {
+            this.dynamite.scale.set(0.025, 0.025, 0.015);
+        }
         this.dynamite.lookAt(new THREE.Vector3(x + xVel, y + yVel, z + zVel));
         this.dynamite.exploded = false;
+        this.dynamite.isDynamite = true;
         this.fromPlayer = fromPlayer;
         scene.third.add.existing(this.dynamite);
         scene.third.physics.add.existing(this.dynamite, { shape: 'hull', color: 'red' });
@@ -35,7 +40,7 @@ class Dynamite {
         this.dynamite.body.on.collision((otherObject, event) => {
             if (((otherObject.name === "ground") && event === "collision" && !this.dynamite.exploded) ||
                 (fromPlayer && otherObject === mainScene.enemy) ||
-                (homing && otherObject !== mainScene.enemy && !otherObject.isArrow)) {
+                (homing && otherObject !== mainScene.enemy && !otherObject.isArrow && !otherObject.isDynamite && event === "collision")) {
                 this.dynamite.exploded = true;
                 if (homing) {
                     mainScene.boom.emitters[0].position.x = this.dynamite.position.x;

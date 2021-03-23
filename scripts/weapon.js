@@ -42,6 +42,9 @@ class Weapon {
                         }
                     }
                 }
+                if (object.isBoss && object.blocking) {
+                    blocked = true;
+                }
                 if (!blocked) {
                     object.body.transform();
                     object.body.setVelocity(object.body.velocity.x + 3 * knockback * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + verticalKnockback, object.body.velocity.z + 3 * knockback * (1 + +slashing) * Math.cos(theta));

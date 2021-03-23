@@ -8,13 +8,14 @@ class Bomb {
         xVel,
         yVel,
         zVel,
+        tick = 0
     }) {
         this.bomb = new ExtendedObject3D();
         this.bomb.add(model.clone());
         this.bomb.position.set(x, y, z);
         this.bomb.scale.set(0.00125, 0.00125, 0.00125);
         this.bomb.lookAt(new THREE.Vector3(x + xVel, y + yVel, z + zVel));
-        this.bomb.tick = 0;
+        this.bomb.tick = tick;
         this.bomb.exploded = false;
         scene.third.add.existing(this.bomb);
         scene.third.physics.add.existing(this.bomb, { shape: 'hull', color: 'black' });

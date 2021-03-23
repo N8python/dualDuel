@@ -4,6 +4,7 @@ class Sword extends Weapon {
             minDamage: 3,
             maxDamage: 8
         });
+        this.tickSinceDamage = 0;
     }
     primaryAttack() {
         if (cooldown < 10 && currXRot < 0.01) {
@@ -33,9 +34,11 @@ class Sword extends Weapon {
         }
     }
     update() {
+        this.tickSinceDamage--;
         currXRot += (targetXRot - currXRot) / (slashing ? 10 : 3);
         if (Math.abs(targetXRot - currXRot) < 0.01 && !blocking) {
-            if (targetXRot !== 0 && !slashing) {
+            if (targetXRot !== 0 && !slashing && this.tickSinceDamage < 0) {
+                this.tickSinceDamage = 20;
                 this.handleSwing({
                     rightBound: Math.PI / 6,
                     leftBound: 0
