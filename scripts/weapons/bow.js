@@ -5,6 +5,7 @@ class Bow extends Weapon {
             maxDamage: 5
         });
         this.charge = 0;
+        this.tickSinceDamage = 0;
     }
     primaryAttack() {
         if (cooldown < 10) {
@@ -37,6 +38,7 @@ class Bow extends Weapon {
         }
     }
     update() {
+        this.tickSinceDamage--;
         if (mainScene.input.mousePointer.rightButtonDown()) {
             this.charge += 0.5;
             mainScene.sword.bowArrow.visible = true;
@@ -85,7 +87,8 @@ class Bow extends Weapon {
         }
         currXRot += (targetXRot - currXRot) / (slashing ? 10 : 3);
         if (Math.abs(targetXRot - currXRot) < 0.01 && !blocking) {
-            if (targetXRot !== 0 && !slashing) {
+            if (targetXRot !== 0 && !slashing && this.tickSinceDamage < 0) {
+                this.tickSinceDamage = 20;
                 this.handleSwing({
                     rightBound: Math.PI / 6,
                     leftBound: 0

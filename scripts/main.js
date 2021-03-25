@@ -19,12 +19,18 @@ let jumpCooldown = 0;
 let blocking = false;
 let slashing = false;
 let framesSinceDeath = 0;
+let playerDamageRot = 0;
+let targetPlayerDamageRot = 0;
 let sensitivity;
 let objects = [];
 let projectiles = [];
 let bootFunction;
 let resetFunction;
 let mainScene;
+let oldEnemyHealth;
+let oldPlayerHealth;
+let healthEnemyLost = 0;
+let healthPlayerLost = 0;
 const soundManager = new p5(p => {
     p.preload = () => {
         //soundManager.test = soundManager.loadSound("assets/sounds/test.mp3");
@@ -129,6 +135,12 @@ if (localProxy.sfxVolume === undefined) {
 if (localProxy.musicVolume === undefined) {
     localProxy.musicVolume = 1;
 }
+if (localProxy.cameraShake === undefined) {
+    localProxy.cameraShake = "on";
+}
+if (localProxy.damageIndicators === undefined) {
+    localProxy.damageIndicators = "on";
+}
 const hardReset = () => {
     localProxy.playerArmor = "none";
     localProxy.playerHat = "none";
@@ -169,7 +181,7 @@ function dealExplodeDamage(position, damage, decayRate, strength = 6, fromPlayer
     }
 }
 
-function playerTakeDamage(damage, type) {
+function playerTakeDamage(damage, type, cameraShake = true) {
     if (localProxy.playerHat === "knightsHelmet") {
         if (Math.random() < 0.25) {
             damage = 0;
@@ -197,9 +209,16 @@ function playerTakeDamage(damage, type) {
         soundManager.hit.rate(soundManager.random(0.75, 1.25));
         soundManager.hit.play();
     }
+    if (cameraShake && (damage * (1 - reduction) > 2) && (localProxy.cameraShake === "on")) {
+        targetPlayerDamageRot = Math.PI / 16;
+        if (Math.random() < 0.5) {
+            targetPlayerDamageRot *= -1;
+        }
+    }
     player.health -= damage * (1 - reduction);
     if (items.armor[localProxy.playerArmor] && items.armor[localProxy.playerArmor].stats.spikes && type === "melee" && player.fire < 0) {
         mainScene.enemy.health -= items.armor[localProxy.playerArmor].stats.spikes();
+        mainScene.enemy.health = Math.max(mainScene.enemy.health, 0);
     }
 }
 class MainScene extends Scene3D {
@@ -562,16 +581,56 @@ class MainScene extends Scene3D {
             healthBars.fillStyle = "orange";
         }
         healthBars.fillRect(80, 5, 150 * (player.health / player.maxHealth), 20);
+        if (healthPlayerLost > 0) {
+            healthPlayerLost -= 0.5;
+        }
+        healthBars.fillStyle = "white";
+        healthBars.fillRect(80 + 150 * (player.health / player.maxHealth), 5, 150 * (healthPlayerLost / player.maxHealth), 20);
         healthBars.fillStyle = "black";
         healthBars.fillRect(76, 36, 158, 28);
         healthBars.fillStyle = `rgb(${255 * (1 - (this.enemy.health / this.enemy.maxHealth))}, ${255 * (this.enemy.health / this.enemy.maxHealth)}, 0)`;
         healthBars.fillRect(80, 40, 150 * (this.enemy.health / this.enemy.maxHealth), 20);
+        healthBars.fillStyle = "white";
+        if (healthEnemyLost > 0) {
+            healthEnemyLost--;
+        }
+        healthBars.fillRect(80 + 150 * (this.enemy.health / this.enemy.maxHealth), 40, 150 * (healthEnemyLost / this.enemy.maxHealth), 20);
         healthBars.font = "30px monospace";
         healthBars.fillStyle = "black";
         healthBars.fillText("You: ", 0, 25);
         healthBars.font = "20px monospace";
         healthBars.fillStyle = "black";
         healthBars.fillText("Enemy: ", 0, 55);
+        if (oldEnemyHealth > this.enemy.health) {
+            let damageTaken = oldEnemyHealth - this.enemy.health;
+            const angleToPlayer = Math.atan2(player.position.x - this.enemy.position.x, player.position.z - this.enemy.position.z);
+            let crit = false;
+            if (Math.random() < 0.15) {
+                crit = true;
+                damageTaken *= 1.5;
+                this.enemy.health -= damageTaken / 3;
+                this.enemy.health = Math.max(this.enemy.health, 0);
+            }
+            healthEnemyLost += Math.floor(damageTaken);
+            if (localProxy.damageIndicators === "on") {
+                new DamageIndicator({
+                    scene: this,
+                    message: Math.round(damageTaken).toString(),
+                    position: {
+                        x: this.enemy.position.x + 0.2 * Math.sin(angleToPlayer),
+                        y: this.enemy.position.y,
+                        z: this.enemy.position.z + 0.2 * Math.cos(angleToPlayer)
+                    },
+                    crit
+                });
+            }
+        }
+        oldEnemyHealth = this.enemy.health;
+        if (oldPlayerHealth > player.health) {
+            let damageTaken = oldPlayerHealth - player.health;
+            healthPlayerLost += Math.floor(damageTaken);
+        }
+        oldPlayerHealth = player.health;
         if (loading.innerHTML !== "") {
             return;
         }
@@ -601,8 +660,20 @@ class MainScene extends Scene3D {
         }
         this.third.camera.position.y += this.bob.y * 1.75;
         this.third.camera.position.y -= 0;
+        //playerDamageRot += (targetPlayerDamageRot - playerDamageRot) / 10;
+        if (playerDamageRot < targetPlayerDamageRot) {
+            playerDamageRot += Math.PI / (16 * 10);
+        }
+        if (playerDamageRot > targetPlayerDamageRot) {
+            playerDamageRot -= Math.PI / (16 * 10);
+        }
+        if (Math.abs(targetPlayerDamageRot - playerDamageRot) < 0.01 && !blocking) {
+            targetPlayerDamageRot = 0;
+        }
         if (this.player.health === 0) {
             this.third.camera.rotateZ(Math.PI / 2 * Math.min(framesSinceDeath / 60, 1));
+        } else {
+            this.third.camera.rotateZ(playerDamageRot);
         }
         if (this.sword) {
             this.weaponController.placeWeapon(this);
@@ -668,7 +739,7 @@ class MainScene extends Scene3D {
             speed *= 0.33;
         }
         if (player.fire > 0 && player.health > 0) {
-            playerTakeDamage(0.25, "melee")
+            playerTakeDamage(0.25, "melee", false)
         }
         if (this.keys.w.isDown) {
             velocityUpdate[0] += Math.sin(theta) * speed;
@@ -994,12 +1065,46 @@ const settingsMenu = () => {
     musicSlider.onchange = () => {
         localProxy.musicVolume = musicSlider.value / 100;
     };
+    const cameraShake = document.createElement("button");
+    cameraShake.classList.add("btn");
+    cameraShake.zIndex = 5;
+    cameraShake.style.position = "absolute";
+    cameraShake.style.left = "50%";
+    cameraShake.style.top = "40%";
+    cameraShake.style.transform = "translate(-50%, -50%)";
+    cameraShake.innerHTML = `Camera Shake: ${localProxy.cameraShake === "on" ? "On": "Off"}`;
+    cameraShake.style.width = "250px";
+    cameraShake.onclick = () => {
+        if (localProxy.cameraShake === "on") {
+            localProxy.cameraShake = "off";
+        } else {
+            localProxy.cameraShake = "on";
+        }
+        cameraShake.innerHTML = `Camera Shake: ${localProxy.cameraShake === "on" ? "On": "Off"}`;
+    };
+    const damageIndicators = document.createElement("button");
+    damageIndicators.classList.add("btn");
+    damageIndicators.zIndex = 5;
+    damageIndicators.style.position = "absolute";
+    damageIndicators.style.left = "50%";
+    damageIndicators.style.top = "51%";
+    damageIndicators.style.transform = "translate(-50%, -50%)";
+    damageIndicators.innerHTML = `Damage Indicators: ${localProxy.damageIndicators === "on" ? "On": "Off"}`;
+    damageIndicators.style.width = "300px";
+    damageIndicators.onclick = () => {
+        if (localProxy.damageIndicators === "on") {
+            localProxy.damageIndicators = "off";
+        } else {
+            localProxy.damageIndicators = "on";
+        }
+        damageIndicators.innerHTML = `Damage Indicators: ${localProxy.damageIndicators === "on" ? "On": "Off"}`;
+    };
     const backButton = document.createElement("button");
     backButton.classList.add("btn");
     backButton.zIndex = 5;
     backButton.style.position = "absolute";
     backButton.style.left = "50%";
-    backButton.style.top = "45%";
+    backButton.style.top = "65%";
     backButton.style.transform = "translate(-50%, -50%)";
     backButton.innerHTML = "Back";
     backButton.style.zIndex = 5;
@@ -1013,6 +1118,8 @@ const settingsMenu = () => {
     menu.appendChild(sfxSlider);
     menu.appendChild(musicLabel);
     menu.appendChild(musicSlider);
+    menu.appendChild(cameraShake);
+    menu.appendChild(damageIndicators);
 }
 const mainMenu = () => {
     menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/logo.gif">`;
