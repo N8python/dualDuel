@@ -1,3 +1,4 @@
+p5.disableFriendlyErrors = true;
 let player;
 let canJump = true;
 let targetXRot = 0;
@@ -24,6 +25,42 @@ let projectiles = [];
 let bootFunction;
 let resetFunction;
 let mainScene;
+const soundManager = new p5(p => {
+    p.preload = () => {
+        //soundManager.test = soundManager.loadSound("assets/sounds/test.mp3");
+        soundManager.metalBlock = soundManager.loadSound("assets/sounds/metalBlock.wav");
+        soundManager.metalHit = soundManager.loadSound("assets/sounds/metalHit.mp3");
+        soundManager.slashLong = soundManager.loadSound("assets/sounds/slashLong.wav");
+        soundManager.slashShort = soundManager.loadSound("assets/sounds/slashShort.wav");
+        soundManager.bowShoot = soundManager.loadSound("assets/sounds/bowShoot.wav");
+        soundManager.hit = soundManager.loadSound("assets/sounds/hit.wav");
+        soundManager.reload = soundManager.loadSound("assets/sounds/reload.wav");
+        soundManager.pistolFire = soundManager.loadSound("assets/sounds/pistolFire.wav");
+        soundManager.dynamite = soundManager.loadSound("assets/sounds/dynamite.wav");
+        soundManager.explosion = soundManager.loadSound("assets/sounds/explosion.wav");
+        soundManager.jetpack = soundManager.loadSound("assets/sounds/jetpack.wav");
+        soundManager.blaster = soundManager.loadSound("assets/sounds/blaster.wav");
+        soundManager.fire = soundManager.loadSound("assets/sounds/fire.wav");
+        soundManager.ice = soundManager.loadSound("assets/sounds/ice.wav");
+        soundManager.wind = soundManager.loadSound("assets/sounds/wind.m4a");
+        soundManager.shield = soundManager.loadSound("assets/sounds/shield.wav");
+        soundManager.hammerHit = soundManager.loadSound("assets/sounds/hammerHit.wav");
+        soundManager.machineGun = soundManager.loadSound("assets/sounds/machineGun.wav");
+        soundManager.missileLaunch = soundManager.loadSound("assets/sounds/missileLaunch.mp3");
+        soundManager.roar = soundManager.loadSound("assets/sounds/roar.mp3");
+        soundManager.lightning = soundManager.loadSound("assets/sounds/lightning.wav");
+        soundManager.shockwave = soundManager.loadSound("assets/sounds/shockwave.mp3");
+        soundManager.stab = soundManager.loadSound("assets/sounds/stab.wav");
+        soundManager.boomerang = soundManager.loadSound("assets/sounds/boomerang.wav");
+        soundManager.woodBlock = soundManager.loadSound("assets/sounds/woodBlock.wav");
+        soundManager.clawBlock = soundManager.loadSound("assets/sounds/clawBlock.wav");
+        soundManager.menuMusic = soundManager.loadSound("assets/sounds/menuMusic.mp3");
+        soundManager.levelMusic = soundManager.loadSound("assets/sounds/levelMusic.m4a");
+    }
+    p.setup = () => {
+        p.createCanvas(0, 0);
+    }
+});
 let levelAIs = {
     1: MeleeEnemyAI,
     2: RangedEnemyAI,
@@ -86,6 +123,12 @@ if (!localProxy.maxLevelUnlocked) {
 if (localProxy.mouseSensitivity === undefined) {
     localProxy.mouseSensitivity = 1;
 }
+if (localProxy.sfxVolume === undefined) {
+    localProxy.sfxVolume = 1;
+}
+if (localProxy.musicVolume === undefined) {
+    localProxy.musicVolume = 1;
+}
 const hardReset = () => {
     localProxy.playerArmor = "none";
     localProxy.playerHat = "none";
@@ -140,6 +183,19 @@ function playerTakeDamage(damage, type) {
         reduction = (items.armor[localProxy.playerArmor].stats.damageReduction * items.armor[localProxy.playerArmor].stats.multiplier(type)) - (items.armor[localProxy.playerArmor].stats.damageReduction2 * damage);
     } else {
         reduction = 0;
+    }
+    if (currLevel === 8) {
+        soundManager.hammerHit.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+        soundManager.hammerHit.rate(soundManager.random(0.75, 1.25));
+        soundManager.hammerHit.play();
+    } else if (currLevel === 10 && type !== "magic") {
+        soundManager.stab.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+        soundManager.stab.rate(soundManager.random(0.75, 1.25));
+        soundManager.stab.play();
+    } else {
+        soundManager.hit.setVolume(soundManager.random(0.5, 0.75) * localProxy.sfxVolume);
+        soundManager.hit.rate(soundManager.random(0.75, 1.25));
+        soundManager.hit.play();
     }
     player.health -= damage * (1 - reduction);
     if (items.armor[localProxy.playerArmor] && items.armor[localProxy.playerArmor].stats.spikes && type === "melee" && player.fire < 0) {
@@ -694,6 +750,8 @@ const levelSelect = () => {
             currLevel = i;
             document.getElementById("menu").innerHTML = "";
             loading.innerHTML = "Loading...";
+            soundManager.levelMusic.loop();
+            soundManager.menuMusic.stop();
             if (mainScene.hidden) {
                 mainScene.reset();
                 mainScene.show();
@@ -910,6 +968,10 @@ const settingsMenu = () => {
     sfxSlider.style.position = "absolute";
     sfxSlider.style.top = "calc(25% + 2px)";
     sfxSlider.style.left = "calc(50% + 70px)";
+    sfxSlider.value = localProxy.sfxVolume * 100;
+    sfxSlider.onchange = () => {
+        localProxy.sfxVolume = sfxSlider.value / 100;
+    };
     const musicLabel = document.createElement("label");
     musicLabel.innerHTML = "Music Volume: ";
     musicLabel.style.transform = "translate(-50%, -50%)";
@@ -928,6 +990,10 @@ const settingsMenu = () => {
     musicSlider.style.position = "absolute";
     musicSlider.style.top = "calc(30% + 2px)";
     musicSlider.style.left = "calc(50% + 70px)";
+    musicSlider.value = localProxy.musicVolume * 100;
+    musicSlider.onchange = () => {
+        localProxy.musicVolume = musicSlider.value / 100;
+    };
     const backButton = document.createElement("button");
     backButton.classList.add("btn");
     backButton.zIndex = 5;
@@ -1006,6 +1072,8 @@ resetButton.onclick = () => {
     resetButton.style.display = "none";
     menu.innerHTML = "";
     gameOverMessage.innerHTML = "";
+    soundManager.levelMusic.stop();
+    soundManager.menuMusic.loop();
     levelSelect();
 }
 document.addEventListener('contextmenu', e => {
@@ -1067,3 +1135,16 @@ setInterval(() => {
     localProxy.coins = Math.min(localProxy.coins, 9999);
     localProxy.coins = Math.max(localProxy.coins, 0);
 });
+let initialMusicStarted = false;
+setTimeout(() => {
+    document.addEventListener("click", () => {
+        if (!initialMusicStarted) {
+            initialMusicStarted = true;
+            soundManager.menuMusic.play();
+        }
+    });
+}, 500);
+setInterval(() => {
+    soundManager.menuMusic.setVolume(localProxy.musicVolume);
+    soundManager.levelMusic.setVolume(localProxy.musicVolume);
+}, 30)

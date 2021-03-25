@@ -39,6 +39,9 @@ class Crossbow extends Weapon {
                     pos.copy(raycaster.ray.direction);
                     pos.multiplyScalar(3);
                     mainScene.third.load.fbx("arrow").then(model => {
+                        soundManager.bowShoot.setVolume(soundManager.random(1.25, 1.5) * localProxy.sfxVolume);
+                        soundManager.bowShoot.rate(soundManager.random(0.75, 1.25));
+                        soundManager.bowShoot.play();
                         projectiles.push(new Arrow({
                             scene: mainScene,
                             model,
@@ -71,6 +74,9 @@ class Crossbow extends Weapon {
                     pos.copy(raycaster.ray.direction);
                     pos.multiplyScalar(3);
                     mainScene.third.load.fbx("bomber-dynamite").then(model => {
+                        soundManager.bowShoot.setVolume(soundManager.random(1.25, 1.5) * localProxy.sfxVolume);
+                        soundManager.bowShoot.rate(soundManager.random(0.75, 1.25));
+                        soundManager.bowShoot.play();
                         projectiles.push(new Dynamite({
                             scene: mainScene,
                             model,

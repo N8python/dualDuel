@@ -95,6 +95,9 @@ class WizardEnemyAI extends EnemyAI {
             } else if (this.enemy.aggroState === "ice") {
                 this.enemy.spellTick++;
                 if (this.enemy.spellTick === 70) {
+                    soundManager.ice.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                    soundManager.ice.rate(soundManager.random(0.75, 1.25));
+                    soundManager.ice.play();
                     projectiles.push(new Ice({
                         scene: mainScene,
                         x: this.enemy.position.x + Math.sin(this.enemy.body.rotation.y),
@@ -110,6 +113,12 @@ class WizardEnemyAI extends EnemyAI {
                 this.enemy.spellTick++;
                 this.rotateTowards(player.position.x, player.position.z);
                 if (this.enemy.spellTick === 60) {
+                    soundManager.fire.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.fire.rate(soundManager.random(0.75, 1.25));
+                    soundManager.fire.play();
+                    setTimeout(() => {
+                        soundManager.fire.stop();
+                    }, 1000);
                     const offsets = [{ x: 0.5, z: 0 }, { x: -0.5, z: 0 }, { x: 0, z: 0.5 }, { x: 0, z: -0.5 }, { x: 0, z: 0 }];
                     const mag = Math.random() * 2 + 1
                     mainScene.fire.emitters.forEach((emitter, i) => {
@@ -127,6 +136,9 @@ class WizardEnemyAI extends EnemyAI {
                 this.enemy.spellTick++;
                 this.rotateTowards(player.position.x, player.position.z);
                 if (this.enemy.spellTick === 60) {
+                    soundManager.wind.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                    soundManager.wind.rate(soundManager.random(0.75, 1.25));
+                    soundManager.wind.play();
                     const offsets = [{ x: 0.5, z: 0 }, { x: 0.5, z: 0.5 }, { x: -0.5, z: 0 }, { x: -0.5, z: -0.5 }, { x: 0, z: 0.5 }, { x: -0.5, z: 0.5 }, { x: 0, z: -0.5 }, { x: 0.5, z: -0.5 }, { x: 0, z: 0 }];
                     mainScene.air.emitters.forEach((emitter, i) => {
                         emitter.position.x = this.enemy.position.x + Math.min(player.position.distanceTo(this.enemy.position), 5) * Math.sin(this.enemy.body.rotation.y) + offsets[i].x;
@@ -141,6 +153,9 @@ class WizardEnemyAI extends EnemyAI {
                 this.enemy.spellTick++;
                 this.rotateTowards(player.position.x, player.position.z);
                 if (this.enemy.spellTick === 21) {
+                    soundManager.shield.setVolume(soundManager.random(1.75, 2.25) * localProxy.sfxVolume);
+                    soundManager.shield.rate(soundManager.random(0.75, 1.25));
+                    soundManager.shield.play();
                     player.body.setVelocityX(player.body.velocity.x + Math.max(10 - 1 * new THREE.Vector3(mainScene.shield.emitters[0].position.x, mainScene.shield.emitters[0].position.y, mainScene.shield.emitters[0].position.z).distanceTo(player.position), 0) * Math.sin(this.enemy.body.rotation.y));
                     player.body.setVelocityZ(player.body.velocity.z + Math.max(10 - 1 * new THREE.Vector3(mainScene.shield.emitters[0].position.x, mainScene.shield.emitters[0].position.y, mainScene.shield.emitters[0].position.z).distanceTo(player.position), 0) * Math.cos(this.enemy.body.rotation.y));
                     mainScene.shield.emitters.forEach((emitter, i) => {

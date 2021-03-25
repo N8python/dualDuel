@@ -13,6 +13,9 @@ class RangedEnemyAI extends EnemyAI {
                 this.enemy.arrowTick = 0;
                 //this.enemy.animation.play("Idle");
                 this.enemy.aggroState = "none";
+                soundManager.bowShoot.setVolume(soundManager.random(1.25, 1.5) * localProxy.sfxVolume);
+                soundManager.bowShoot.rate(soundManager.random(0.75, 1.25));
+                soundManager.bowShoot.play();
                 projectiles.push(new Arrow({
                     scene: mainScene,
                     model: mainScene.enemy.arrowModel,

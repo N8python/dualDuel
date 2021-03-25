@@ -29,6 +29,9 @@ class Boomerang extends Weapon {
             mainScene.third.load.fbx("boomerang").then(model => {
                 mainScene.sword.rang.visible = false;
                 this.thrown = true;
+                soundManager.boomerang.setVolume(soundManager.random(0.6, 0.8) * localProxy.sfxVolume);
+                soundManager.boomerang.rate(soundManager.random(0.75, 1.25));
+                soundManager.boomerang.play();
                 projectiles.push(new Rang({
                     scene: mainScene,
                     model,
@@ -56,6 +59,9 @@ class Boomerang extends Weapon {
     specialAttack() {
         if (cooldown < 10 && !slashing) {
             slashing = true;
+            soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+            soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+            soundManager.slashLong.play();
             this.handleSwing({
                 rightBound: Math.PI / 4,
                 leftBound: -Math.PI / 4
@@ -96,6 +102,11 @@ class Boomerang extends Weapon {
             }
             targetYOffset = 0.35;
         }
+        if (cooldown < 1 && targetCooldown > 0) {
+            soundManager.woodBlock.setVolume(soundManager.random(0.25, 0.45) * localProxy.sfxVolume);
+            soundManager.woodBlock.rate(soundManager.random(0.75, 1.25));
+            soundManager.woodBlock.play();
+        }
         cooldown += (targetCooldown - cooldown) / 10;
         if (Math.abs(targetCooldown - cooldown) < 0.01) {
             targetCooldown = 0;
@@ -103,6 +114,7 @@ class Boomerang extends Weapon {
         projectiles.forEach(projectile => {
             if (projectile instanceof Rang && !projectile.fromEnemy && this.throwCooldown < 1) {
                 if (projectile.rang.position.distanceTo(player.position) < 1.5) {
+                    soundManager.boomerang.stop();
                     this.thrown = false;
                     mainScene.sword.rang.visible = true;
                     projectile.rang.visible = false;
@@ -111,6 +123,7 @@ class Boomerang extends Weapon {
                     mainScene.third.physics.destroy(projectile.rang);
                     mainScene.third.scene.children.splice(mainScene.third.scene.children.indexOf(projectile.rang), 1);
                 } else if ((projectile.rang.position.y + 3 < player.position.y && projectile.rang.position.y < 0) || projectile.rang.tick > 300) {
+                    soundManager.boomerang.stop();
                     this.thrown = false;
                     mainScene.sword.rang.visible = true;
                     projectile.rang.visible = false;

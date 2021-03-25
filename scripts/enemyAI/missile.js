@@ -61,6 +61,8 @@ class MissileEnemyAI extends EnemyAI {
                     this.enemy.launcher.children[1].visible = true;
                 }
                 if (this.enemy.missileTick === 180) {
+                    soundManager.missileLaunch.setVolume(localProxy.sfxVolume);
+                    soundManager.missileLaunch.play();
                     this.enemy.missileTick = 0;
                     projectiles.push(new Dynamite({
                         scene: mainScene,
@@ -82,6 +84,9 @@ class MissileEnemyAI extends EnemyAI {
                         this.enemy.animation.play("Smash");
                         this.enemy.aggroState = "attack";
                     } else {
+                        soundManager.machineGun.setVolume(soundManager.random(0.3, 0.6) * localProxy.sfxVolume);
+                        soundManager.machineGun.rate(soundManager.random(0.6, 0.9));
+                        soundManager.machineGun.play();
                         projectiles.push(new Arrow({
                             scene: mainScene,
                             model: mainScene.enemy.arrowModel,

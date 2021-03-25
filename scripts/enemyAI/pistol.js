@@ -102,8 +102,14 @@ class PistolEnemyAI extends EnemyAI {
                             this.enemy.animation.play("Slashing3");
                         }
                         this.enemy.knife.visible = true;
+                        soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                        soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                        soundManager.slashLong.play();
                         this.enemy.aggroState = "attack";
                     } else {
+                        soundManager.pistolFire.setVolume(soundManager.random(0.3, 0.425) * localProxy.sfxVolume);
+                        soundManager.pistolFire.rate(soundManager.random(0.75, 1.25));
+                        soundManager.pistolFire.play();
                         this.enemy.animation.play("Shoot");
                         this.enemy.aggroState = "shoot";
                         this.enemy.bulletsToShoot = Math.floor(Math.random() * 3) + 3;
@@ -116,6 +122,9 @@ class PistolEnemyAI extends EnemyAI {
                 }
                 if (this.enemy.bulletsLeft === 0 && this.enemy.position.distanceTo(target.position) > 4) {
                     this.enemy.animation.play("Reload");
+                    soundManager.reload.setVolume(soundManager.random(1.25, 1.75) * localProxy.sfxVolume);
+                    soundManager.reload.rate(soundManager.random(0.75, 1.25));
+                    soundManager.reload.play();
                     this.enemy.aggroState = "reload";
                 } else if (this.enemy.bulletsLeft === 0) {
                     if (this.enemy.position.distanceTo(target.position) < 2) {
@@ -128,6 +137,9 @@ class PistolEnemyAI extends EnemyAI {
                             this.enemy.animation.play("Slashing3");
                         }
                         this.enemy.knife.visible = true;
+                        soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                        soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                        soundManager.slashLong.play();
                         this.enemy.aggroState = "attack";
                     } else {
                         this.enemy.aggroState = "flee";
@@ -173,6 +185,9 @@ class PistolEnemyAI extends EnemyAI {
             } else if (this.enemy.aggroState === "dodge") {
                 this.rotateTowards(futurePos.x, futurePos.z);
                 this.stayUp(1);
+            }
+            if (this.enemy.aggroState !== "shoot") {
+                soundManager.pistolFire.stop();
             }
         }
         if (Math.abs(target.position.y - this.enemy.position.y) > 8 || target.health === 0) {

@@ -147,6 +147,9 @@ class KnightEnemyAI extends EnemyAI {
                 this.enemy.cooldown = 76;
             }
             setTimeout(() => {
+                soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                soundManager.slashLong.play();
                 if (this.enemy.position.distanceTo(target.position) < 3.5) {
                     if (blocking && target === player && cooldown < 10) {
                         targetCooldown = 100;

@@ -34,6 +34,9 @@ class Bomb {
             mainScene.smoke.emitters[0].currentEmitTime = 0;
         }
         if (this.bomb.tick === 120) {
+            soundManager.explosion.setVolume(soundManager.random(0.1, 0.15) * localProxy.sfxVolume);
+            soundManager.explosion.rate(soundManager.random(0.75, 1.25));
+            soundManager.explosion.play();
             mainScene.explosion.emitters[0].position.x = this.bomb.position.x;
             mainScene.explosion.emitters[0].position.y = this.bomb.position.y;
             mainScene.explosion.emitters[0].position.z = this.bomb.position.z;

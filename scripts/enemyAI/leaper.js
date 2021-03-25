@@ -56,6 +56,9 @@ class LeaperEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z);
                 this.moveYDir(0.2);
                 if (this.enemy.position.distanceTo(player.position) < 7.5 && this.enemy.mainHammer.visible && this.enemy.throwCooldown < 0) {
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                    soundManager.slashLong.play();
                     this.enemy.animation.play("Throw");
                     //this.enemy.body.setVelocityY(this.enemy.body.velocity.y + 4);
                     //this.moveYDir(3);
@@ -67,12 +70,18 @@ class LeaperEnemyAI extends EnemyAI {
                     });
                 }
                 if (this.enemy.position.distanceTo(player.position) < 5 && this.enemy.mainHammer.visible && this.enemy.specialCooldown < 0) {
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.5, 0.75));
+                    soundManager.slashLong.play();
                     this.enemy.animation.play("Smash");
                     this.enemy.body.setVelocityY(this.enemy.body.velocity.y + 4);
                     this.moveYDir(3);
                     this.enemy.aggroState = "smash";
                 }
                 if (this.enemy.position.distanceTo(player.position) < 3.5 && this.enemy.mainHammer.visible) {
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                    soundManager.slashLong.play();
                     this.enemy.animation.play("Slashing");
                     this.enemy.aggroState = "attack";
                 }

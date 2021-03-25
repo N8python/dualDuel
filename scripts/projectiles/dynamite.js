@@ -42,6 +42,9 @@ class Dynamite {
                 (fromPlayer && otherObject === mainScene.enemy) ||
                 (homing && otherObject !== mainScene.enemy && !otherObject.isArrow && !otherObject.isDynamite && event === "collision")) {
                 this.dynamite.exploded = true;
+                soundManager.explosion.setVolume(soundManager.random(0.1, 0.2) * localProxy.sfxVolume);
+                soundManager.explosion.rate(soundManager.random(0.75, 1.25));
+                soundManager.dynamite.play();
                 if (homing) {
                     mainScene.boom.emitters[0].position.x = this.dynamite.position.x;
                     mainScene.boom.emitters[0].position.y = this.dynamite.position.y;

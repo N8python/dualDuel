@@ -16,11 +16,17 @@ class Weapon {
                 if (object.aggroState && (object.strafeCounter !== undefined || object.isBomber)) {
                     if (slashing) {
                         if (Math.random() < 0.33 + (object.isBomber ? -0.33 : 0)) {
+                            soundManager.metalBlock.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                            soundManager.metalBlock.rate(soundManager.random(0.75, 1.25));
+                            soundManager.metalBlock.play();
                             object.animation.play("Block");
                             blocked = true;
                         }
                     } else {
                         if (Math.random() < 0.2 + (object.isBomber ? -0.2 : 0)) {
+                            soundManager.metalBlock.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                            soundManager.metalBlock.rate(soundManager.random(0.75, 1.25));
+                            soundManager.metalBlock.play();
                             object.animation.play("Block");
                             blocked = true;
                         }
@@ -43,6 +49,9 @@ class Weapon {
                     }
                 }
                 if (object.isBoss && object.blocking) {
+                    soundManager.metalBlock.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                    soundManager.metalBlock.rate(soundManager.random(0.75, 1.25));
+                    soundManager.metalBlock.play();
                     blocked = true;
                 }
                 if (!blocked) {
@@ -50,6 +59,9 @@ class Weapon {
                     object.body.setVelocity(object.body.velocity.x + 3 * knockback * (1 + +slashing) * Math.sin(theta), object.body.velocity.y + verticalKnockback, object.body.velocity.z + 3 * knockback * (1 + +slashing) * Math.cos(theta));
                 }
                 if (object.health && !blocked) {
+                    soundManager.metalHit.setVolume(soundManager.random(0.1, 0.2) * localProxy.sfxVolume);
+                    soundManager.metalHit.rate(soundManager.random(0.75, 1.25));
+                    soundManager.metalHit.play();
                     object.health -= Math.floor(Math.random() * (this.maxDamage - this.minDamage) + this.minDamage + 3 * +slashing) + buff;
                     object.health = Math.max(0, object.health);
                 }

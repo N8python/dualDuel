@@ -23,6 +23,9 @@ class Claw extends Weapon {
     }
     specialAttack() {
         if (cooldown < 10 && !slashing) {
+            soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+            soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+            soundManager.slashLong.play();
             slashing = true;
             this.handleSwing({
                 rightBound: Math.PI / 4,
@@ -46,6 +49,9 @@ class Claw extends Weapon {
             pos.copy(raycaster.ray.direction);
             pos.multiplyScalar(3);
             player.body.transform();
+            soundManager.ice.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+            soundManager.ice.rate(soundManager.random(0.75, 1.25));
+            soundManager.ice.play();
             mainScene.ice.emitters[0].position.x = xPos + pos.x * force;
             mainScene.ice.emitters[0].position.y = 0.25;
             mainScene.ice.emitters[0].position.z = zPos + pos.z * force;
@@ -97,6 +103,11 @@ class Claw extends Weapon {
                 //targetCooldown = 225;
             }
             targetYOffset = 0.35;
+        }
+        if (cooldown < 1 && targetCooldown > 0 && blocking) {
+            soundManager.clawBlock.setVolume(soundManager.random(1.5, 1.75) * localProxy.sfxVolume);
+            soundManager.clawBlock.rate(soundManager.random(0.75, 1.25));
+            soundManager.clawBlock.play();
         }
         cooldown += (targetCooldown - cooldown) / 5;
         if (Math.abs(targetCooldown - cooldown) < 0.01) {

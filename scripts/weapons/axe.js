@@ -25,6 +25,9 @@ class Axe extends Weapon {
     specialAttack() {
         if (cooldown < 10 && !slashing) {
             slashing = true;
+            soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+            soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+            soundManager.slashLong.play();
             this.handleSwing({
                 rightBound: Math.PI / 4,
                 leftBound: -Math.PI / 4,
@@ -44,6 +47,9 @@ class Axe extends Weapon {
         currXRot += (targetXRot - currXRot) / (slashing ? 10 : 3);
         if (Math.abs(targetXRot - currXRot) < 0.01 && !blocking) {
             if (targetXRot !== 0) {
+                soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                soundManager.slashLong.play();
                 this.handleSwing({
                     rightBound: Math.PI / 4,
                     leftBound: -Math.PI / 8
@@ -75,6 +81,11 @@ class Axe extends Weapon {
                 //targetCooldown = 225;
             }
             targetYOffset = 0.35;
+        }
+        if (cooldown < 1 && targetCooldown > 0 && blocking) {
+            soundManager.metalBlock.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+            soundManager.metalBlock.rate(soundManager.random(0.75, 1.25));
+            soundManager.metalBlock.play();
         }
         cooldown += (targetCooldown - cooldown) / 10;
         if (Math.abs(targetCooldown - cooldown) < 0.01) {

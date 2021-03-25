@@ -23,6 +23,9 @@ class Bow extends Weapon {
     specialAttack() {
         if (cooldown < 10 && !slashing) {
             slashing = true;
+            soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+            soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+            soundManager.slashLong.play();
             this.handleSwing({
                 rightBound: Math.PI / 4,
                 leftBound: -Math.PI / 4
@@ -58,6 +61,9 @@ class Bow extends Weapon {
                 pos.copy(raycaster.ray.direction);
                 pos.multiplyScalar(3);
                 mainScene.third.load.fbx("arrow").then(model => {
+                        soundManager.bowShoot.setVolume(soundManager.random(1.25, 1.5) * localProxy.sfxVolume);
+                        soundManager.bowShoot.rate(soundManager.random(0.75, 1.25));
+                        soundManager.bowShoot.play();
                         projectiles.push(new Arrow({
                             scene: mainScene,
                             model,

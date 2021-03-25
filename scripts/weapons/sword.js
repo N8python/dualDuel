@@ -23,6 +23,9 @@ class Sword extends Weapon {
     specialAttack() {
         if (cooldown < 10 && !slashing) {
             slashing = true;
+            soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+            soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+            soundManager.slashLong.play();
             this.handleSwing({
                 rightBound: Math.PI / 4,
                 leftBound: -Math.PI / 4
@@ -39,6 +42,9 @@ class Sword extends Weapon {
         if (Math.abs(targetXRot - currXRot) < 0.01 && !blocking) {
             if (targetXRot !== 0 && !slashing && this.tickSinceDamage < 0) {
                 this.tickSinceDamage = 20;
+                soundManager.slashShort.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                soundManager.slashShort.rate(soundManager.random(0.75, 1.25));
+                soundManager.slashShort.play();
                 this.handleSwing({
                     rightBound: Math.PI / 6,
                     leftBound: 0
@@ -63,6 +69,11 @@ class Sword extends Weapon {
                 //targetCooldown = 225;
             }
             targetYOffset = 0.35;
+        }
+        if (cooldown < 1 && targetCooldown > 0) {
+            soundManager.metalBlock.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+            soundManager.metalBlock.rate(soundManager.random(0.75, 1.25));
+            soundManager.metalBlock.play();
         }
         cooldown += (targetCooldown - cooldown) / 10;
         if (Math.abs(targetCooldown - cooldown) < 0.01) {

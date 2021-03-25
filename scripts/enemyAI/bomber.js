@@ -168,6 +168,9 @@ class BomberEnemyAI extends EnemyAI {
                     mainScene.smoke.emitters[0].position.y = 0.7;
                     mainScene.smoke.emitters[0].currentEmitTime = 0;
                     dealExplodeDamage(new THREE.Vector3(this.enemy.position.x + Math.sin(this.enemy.body.rotation.y), 0.7, this.enemy.position.z + Math.cos(this.enemy.body.rotation.y)), 10, 1.75, 2);
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                    soundManager.slashLong.play();
                     if (this.enemy.position.distanceTo(target.position) < 3.5) {
                         if (blocking) {
                             targetCooldown = 75;

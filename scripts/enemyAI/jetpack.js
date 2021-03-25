@@ -6,6 +6,8 @@ class JetpackEnemyAI extends EnemyAI {
         this.enemy.aggro = false;
         this.enemy.aggroState = "none";
         this.enemy.shootTick = 0;
+        soundManager.jetpack.setVolume(0.75);
+        soundManager.jetpack.loop();
     }
     update(target, ground) {
         const futurePos = futurePlayerPos(this.enemy.position.distanceTo(player.position) / 20);
@@ -13,6 +15,7 @@ class JetpackEnemyAI extends EnemyAI {
         this.stayUp(1);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
+                soundManager.jetpack.stop();
                 resetButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!";
                 playerWin();
@@ -48,6 +51,9 @@ class JetpackEnemyAI extends EnemyAI {
             } else if (this.enemy.aggroState === "shoot") {
                 this.enemy.shootTick++;
                 if (this.enemy.shootTick % 10 === 0) {
+                    soundManager.blaster.setVolume(soundManager.random(0.1, 0.15) * localProxy.sfxVolume);
+                    soundManager.blaster.rate(soundManager.random(0.75, 1.25));
+                    soundManager.blaster.play();
                     projectiles.push(new Arrow({
                         scene: mainScene,
                         model: mainScene.enemy.arrowModel,
@@ -86,6 +92,7 @@ class JetpackEnemyAI extends EnemyAI {
             }
         }
         if (Math.abs(target.position.y - this.enemy.position.y) > 8 || target.health === 0) {
+            soundManager.jetpack.stop();
             if (this.enemy.aggro) {
                 if (target.health === 0) {
                     this.enemy.animation.play("Celebrate");

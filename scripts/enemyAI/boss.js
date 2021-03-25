@@ -158,6 +158,9 @@ class BossEnemyAI extends EnemyAI {
         if ((this.enemy.position.distanceTo(target.position) < 9 || this.enemy.health < this.enemy.maxHealth || this.enemy.aggro) && target.health > 0) {
             if (!this.enemy.aggro) {
                 this.enemy.animation.play("Roar");
+                soundManager.roar.setVolume(soundManager.random(0.3, 0.6) * localProxy.sfxVolume);
+                soundManager.roar.rate(soundManager.random(0.75, 1.25));
+                soundManager.roar.play();
                 this.enemy.aggroState = "roar";
                 this.enemy.animation.mixer._actions.forEach(x => {
                     if (x.getClip().isRoar) {
@@ -168,6 +171,9 @@ class BossEnemyAI extends EnemyAI {
             if (this.enemy.attackTree.stage === 1 && this.enemy.health < 400 && this.enemy.aggroState !== "roar") {
                 this.enemy.bomb.visible = false;
                 this.enemy.animation.play("Roar");
+                soundManager.roar.setVolume(soundManager.random(0.3, 0.6) * localProxy.sfxVolume);
+                soundManager.roar.rate(soundManager.random(0.75, 1.25));
+                soundManager.roar.play();
                 this.enemy.aggroState = "roar";
                 this.enemy.animation.mixer._actions.forEach(x => {
                     if (x.getClip().isRoar) {
@@ -178,6 +184,9 @@ class BossEnemyAI extends EnemyAI {
             if (this.enemy.attackTree.stage === 2 && this.enemy.health < 250 && this.enemy.aggroState !== "roar") {
                 this.enemy.bomb.visible = false;
                 this.enemy.animation.play("Roar");
+                soundManager.roar.setVolume(soundManager.random(0.3, 0.6) * localProxy.sfxVolume);
+                soundManager.roar.rate(soundManager.random(0.75, 1.25));
+                soundManager.roar.play();
                 this.enemy.aggroState = "roar";
                 this.enemy.animation.mixer._actions.forEach(x => {
                     if (x.getClip().isRoar) {
@@ -240,6 +249,9 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 60) {
+                    soundManager.ice.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                    soundManager.ice.rate(soundManager.random(0.75, 1.25));
+                    soundManager.ice.play();
                     projectiles.push(new Ice({
                         scene: mainScene,
                         x: this.enemy.position.x + Math.sin(this.enemy.body.rotation.y),
@@ -254,6 +266,9 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 40) {
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                    soundManager.slashLong.play();
                     if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
@@ -269,6 +284,9 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 75) {
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                    soundManager.slashLong.play();
                     if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
@@ -284,6 +302,9 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 60) {
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                    soundManager.slashLong.play();
                     if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
@@ -318,6 +339,9 @@ class BossEnemyAI extends EnemyAI {
                     this.moveYDir(4);
                 }
                 if (this.enemy.attackTick === 75) {
+                    soundManager.slashLong.setVolume(soundManager.random(0.4, 0.6) * localProxy.sfxVolume);
+                    soundManager.slashLong.rate(soundManager.random(0.75, 1.25));
+                    soundManager.slashLong.play();
                     if (this.enemy.position.distanceTo(player.position) < 3.5) {
                         if (blocking && cooldown < 10) {
                             targetCooldown = 100;
@@ -353,6 +377,9 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 80) {
+                    soundManager.shockwave.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                    soundManager.shockwave.rate(soundManager.random(0.75, 1.25));
+                    soundManager.shockwave.play();
                     mainScene.shockwave.emitters[0].position.x = this.enemy.position.x + 1.5 * Math.sin(this.enemy.body.rotation.y);
                     mainScene.shockwave.emitters[0].position.y = this.enemy.position.y + 0.2;
                     mainScene.shockwave.emitters[0].position.z = this.enemy.position.z + 1.5 * Math.cos(this.enemy.body.rotation.y);
@@ -370,6 +397,9 @@ class BossEnemyAI extends EnemyAI {
                 this.rotateTowards(player.position.x, player.position.z, 4);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick === 60) {
+                    soundManager.lightning.setVolume(soundManager.random(0.75, 1.25) * localProxy.sfxVolume);
+                    soundManager.lightning.rate(soundManager.random(0.75, 1.25));
+                    soundManager.lightning.play();
                     projectiles.push(new Dynamite({
                         scene: mainScene,
                         model: this.enemy.lightningModel,
