@@ -94,14 +94,13 @@ class Axe extends Weapon {
     }
     static loadWeapon(instance) {
         instance.third.load.fbx("axe").then(object => {
-            object.children = [object.children[2]];
             object.receiveShadow = true;
             object.castShadow = true;
             loading.innerHTML = "Loading Enemy...";
             instance.sword = object;
-            instance.sword.scale.set(0.04, 0.04, 0.04);
-            instance.sword.rotation.z = (-3 * (Math.PI / 2)) + Math.PI;
-            instance.sword.rotation.x = Math.PI / 2;
+            instance.sword.scale.set(0.00175, 0.00175, 0.00175);
+            //instance.sword.rotation.z = (-3 * (Math.PI / 2)) + Math.PI;
+            //instance.sword.rotation.x = Math.PI / 2;
             instance.sword.traverse(child => {
                 if (child.isMesh) {
                     child.castShadow = child.receiveShadow = true
@@ -117,7 +116,7 @@ class Axe extends Weapon {
         // adjust the position of the rifle to the camera
         const raycaster = new THREE.Raycaster();
         // x and y are normalized device coordinates from -1 to +1
-        raycaster.setFromCamera({ x: currXOffset - instance.bob.x - 0.4, y: -currYOffset - instance.bob.y - (cooldown / 100) - (framesSinceDeath / 60) - 0.5 }, instance.third.camera);
+        raycaster.setFromCamera({ x: currXOffset - instance.bob.x, y: -currYOffset - instance.bob.y - (cooldown / 100) - (framesSinceDeath / 60) }, instance.third.camera);
         const pos = new THREE.Vector3();
         pos.copy(raycaster.ray.direction);
         pos.multiplyScalar(1.2 + instance.bob.z);
@@ -127,7 +126,7 @@ class Axe extends Weapon {
         const rot = instance.third.camera.rotation;
         instance.sword.rotation.copy(rot);
         instance.sword.rotateX(currXRot);
-        instance.sword.rotateY(currYRot);
+        instance.sword.rotateY(currYRot + Math.PI / 2);
         instance.sword.rotateZ(currZRot);
     }
 }
