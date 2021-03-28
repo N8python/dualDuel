@@ -11,9 +11,13 @@ class Dynamite {
         fromPlayer,
         antigravity,
         homing,
-        lightning
+        lightning,
+        fuse = 0
     }) {
         this.homing = homing;
+        this.fromPlayer = fromPlayer;
+        this.lit = -1;
+        this.fuse = fuse;
         this.antigravity = antigravity;
         this.dynamite = new ExtendedObject3D();
         this.dynamite.add(model.clone());
@@ -31,7 +35,7 @@ class Dynamite {
         objects.push(this.dynamite);
         setTimeout(() => {
             this.dynamite.body.transform();
-            this.dynamite.body.setFriction(0.5);
+            this.dynamite.body.setFriction(1);
             this.dynamite.body.setVelocity(xVel, yVel, zVel);
             if (antigravity) {
                 this.dynamite.body.setGravity(0, 0, 0)
@@ -41,11 +45,30 @@ class Dynamite {
             if (((otherObject.name === "ground") && event === "collision" && !this.dynamite.exploded) ||
                 (fromPlayer && otherObject === mainScene.enemy) ||
                 (homing && otherObject !== mainScene.enemy && !otherObject.isArrow && !otherObject.isDynamite && event === "collision")) {
+                if (this.lit === -1) {
+                    this.lit = 0;
+                }
+            }
+        });
+    }
+    update() {
+        if (this.homing) {
+            this.dynamite.body.transform();
+            const angleToPlayer = Math.atan2(player.position.x - this.dynamite.position.x, player.position.z - this.dynamite.position.z);
+            this.dynamite.body.setAngularVelocityY(-angleDifference(angleToPlayer, this.dynamite.body.rotation.y) * 4);
+            this.dynamite.body.setVelocity(this.dynamite.body.velocity.x * 0.9 + 0.75 * Math.sin(angleToPlayer), this.dynamite.body.velocity.y + (this.dynamite.position.y < player.position.y ? 0.05 : -0.05), this.dynamite.body.velocity.z * 0.9 + 0.75 * Math.cos(angleToPlayer));
+        }
+        if (this.lit >= 0) {
+            mainScene.smoke.emitters[0].position.x = this.dynamite.position.x;
+            mainScene.smoke.emitters[0].position.y = this.dynamite.position.y;
+            mainScene.smoke.emitters[0].position.z = this.dynamite.position.z;
+            mainScene.smoke.emitters[0].currentEmitTime = 0;
+            if (this.lit >= this.fuse) {
                 this.dynamite.exploded = true;
                 soundManager.dynamite.setVolume(soundManager.random(0.5, 0.75) * localProxy.sfxVolume);
                 soundManager.dynamite.rate(soundManager.random(0.75, 1.25));
                 soundManager.dynamite.play();
-                if (homing) {
+                if (this.homing) {
                     mainScene.boom.emitters[0].position.x = this.dynamite.position.x;
                     mainScene.boom.emitters[0].position.y = this.dynamite.position.y;
                     mainScene.boom.emitters[0].position.z = this.dynamite.position.z;
@@ -63,14 +86,7 @@ class Dynamite {
                 mainScene.third.scene.children.splice(mainScene.third.scene.children.indexOf(this.dynamite), 1);
                 dealExplodeDamage(this.dynamite.position, 25, 1.5, 6, this.fromPlayer);
             }
-        });
-    }
-    update() {
-        if (this.homing) {
-            this.dynamite.body.transform();
-            const angleToPlayer = Math.atan2(player.position.x - this.dynamite.position.x, player.position.z - this.dynamite.position.z);
-            this.dynamite.body.setAngularVelocityY(-angleDifference(angleToPlayer, this.dynamite.body.rotation.y) * 4);
-            this.dynamite.body.setVelocity(this.dynamite.body.velocity.x * 0.9 + 0.75 * Math.sin(angleToPlayer), this.dynamite.body.velocity.y + (this.dynamite.position.y < player.position.y ? 0.05 : -0.05), this.dynamite.body.velocity.z * 0.9 + 0.75 * Math.cos(angleToPlayer));
+            this.lit++;
         }
     }
     get body() {

@@ -1,6 +1,6 @@
 class BomberEnemyAI extends EnemyAI {
     constructor(enemy) {
-        super(enemy, 250);
+        super(enemy, 200);
         this.enemy.animation.play('Idle');
         this.enemy.aggro = false;
         this.enemy.aggroState = "none";
@@ -48,6 +48,7 @@ class BomberEnemyAI extends EnemyAI {
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
+                shopButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!";
                 playerWin();
                 this.enemy.dead = true;
@@ -133,7 +134,8 @@ class BomberEnemyAI extends EnemyAI {
                         z: this.enemy.position.z + Math.cos(this.enemy.body.rotation.y),
                         xVel: 7 * Math.sin(this.enemy.body.rotation.y),
                         yVel: 0,
-                        zVel: 7 * Math.cos(this.enemy.body.rotation.y)
+                        zVel: 7 * Math.cos(this.enemy.body.rotation.y),
+                        fuse: 15
                     }));
                 }
             } else if (this.enemy.aggroState === "carry") {

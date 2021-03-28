@@ -17,13 +17,14 @@
 </head>
 
 <body style="overflow: hidden;">
-    <canvas style="position: absolute;margin:0px;left:16px;top:16px;z-index:10" id="healthBars" width="300px" height="300px"></canvas>
+    <canvas style="position: absolute;margin:0px;left:16px;top:16px;z-index:10" id="healthBars" width="300px" height="400px"></canvas>
     <h1 id="loading" style="color:rgb(255, 255, 255);font-size:50px;position: absolute;z-index: 20;top:50%;left:50%;transform:translate(-50%, -50%);"></h1>
     <div id="menu">
     </div>
     <h1 id="gameOverMessage" style="color:rgb(255, 255, 255);font-size:80px;position: absolute;z-index: 20;top:40%;left:50%;transform:translate(-50%, -50%);"></h1>
     <span style="position:absolute;z-index:5;left:calc(100% - 190px);"><img width="64px" src="assets/images/coin.png"><span style="font-size:42px;position:relative;top:12px;" id="coinDisplay">0000</span></span>
-    <button style="position: absolute;left:50%;top:60%;transform:translate(-50%, -50%);display:none;z-index:20;" class="btn" id="resetButton">Back</button>
+    <button style="position: absolute;left:50%;top:60%;transform:translate(-50%, -50%);display:none;z-index:20;" class="btn" id="shopButton">Shop</button>
+    <button style="position: absolute;left:50%;top:71%;transform:translate(-50%, -50%);display:none;z-index:20;" class="btn" id="resetButton">Back</button>
     <div style="z-index:10;" id="instructions" class="w3-modal">
         <div class="w3-modal-content w3-animate-zoom">
             <div class="w3-container w3-padding">
@@ -37,6 +38,8 @@
             </div>
         </div>
     </div>
+    <img id="crosshair" style="position: absolute; top:50%;left:50%;transform:translate(-50%, -50%);z-index:5;width:16px;height:16px;display:none" src="assets/images/crosshair.png"></img>
+    <img id="cooldownIndicator" src="assets/images/cooldownIndicator.png" hidden>
     <script src="scripts/constants.js"></script>
     <script src="lib/three-nebula.js"></script>
     <script src="scripts/proxy.js"></script>

@@ -17,6 +17,7 @@ class JetpackEnemyAI extends EnemyAI {
             if (!this.enemy.dead) {
                 soundManager.jetpack.stop();
                 resetButton.style.display = "block";
+                shopButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!";
                 playerWin();
                 this.enemy.dead = true;

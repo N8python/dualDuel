@@ -31,6 +31,7 @@ let oldEnemyHealth;
 let oldPlayerHealth;
 let healthEnemyLost = 0;
 let healthPlayerLost = 0;
+let prevTargetCooldown = 0;
 const soundManager = new p5(p => {
     p.preload = () => {
         //soundManager.test = soundManager.loadSound("assets/sounds/test.mp3");
@@ -88,14 +89,14 @@ let weaponClasses = {
     "claw": Claw
 }
 let levelCoinYield = {
-    1: [50, 25, 10],
-    2: [75, 50, 20, 10],
-    3: [100, 50, 25, 15],
-    4: [125, 75, 30, 15],
-    5: [200, 100, 50, 25],
-    6: [200, 150, 100, 50, 25],
-    7: [225, 150, 100, 50, 30],
-    8: [250, 175, 125, 75, 50],
+    1: [75, 50, 25],
+    2: [100, 50, 25],
+    3: [125, 50, 25],
+    4: [175, 75, 30],
+    5: [200, 100, 50],
+    6: [200, 150, 100, 50, 35],
+    7: [225, 150, 100, 50],
+    8: [250, 175, 125, 75],
     9: [250, 175, 125, 75],
     10: [500, 250, 125, 100]
 }
@@ -104,7 +105,9 @@ const healthBars = document.getElementById("healthBars").getContext("2d");
 const loading = document.getElementById("loading");
 const gameOverMessage = document.getElementById("gameOverMessage");
 const resetButton = document.getElementById("resetButton");
+const shopButton = document.getElementById("shopButton");
 const menu = document.getElementById("menu");
+const cooldownIndicator = document.getElementById("cooldownIndicator");
 if (!localProxy.playerArmor) {
     localProxy.playerArmor = "none";
 }
@@ -359,6 +362,23 @@ class MainScene extends Scene3D {
              }
          });*/
         instance.player.body.setFriction(1);
+        const drawRectangle = ctx => {
+            ctx.beginPath()
+            ctx.strokeStyle = 'red'
+            ctx.fillStyle = 'blue'
+            ctx.lineWidth = 12
+            ctx.rect(0, 0, 100, 100)
+            ctx.fill()
+            ctx.stroke()
+        }
+        instance.third.renderer.autoClear = false;
+        instance.ui = {
+            camera: instance.third.cameras.orthographicCamera({ left: 0, right: window.innerWidth, bottom: 0, top: window.innerHeight }),
+            scene: new THREE.Scene()
+        }
+        const sprite = new FLAT.DrawSprite(100, 100, drawRectangle);
+        sprite.setPosition(window.innerWidth / 2, window.innerHeight / 2);
+        instance.ui.scene.add(sprite)
         loading.innerHTML = "Loading Weapon...";
         /*instance.third.load.fbx("./assets/weapons/sword.fbx").then(object => {
             object.receiveShadow = true;
@@ -480,6 +500,20 @@ class MainScene extends Scene3D {
             }*/
         });
     }
+    preRender() {
+        // needed for the 2d camera
+        this.third.renderer.clear();
+    }
+
+    postRender() {
+        alert("YAY")
+            // needed for the 2d camera
+        if (this.ui) {
+            this.renderer.clearDepth();
+            this.renderer.render(this.ui.scene, this.ui.camera);
+            FLAT.render(this.ui.camera);
+        }
+    }
     create() {
         mainScene = this;
         const self = this;
@@ -549,16 +583,19 @@ class MainScene extends Scene3D {
             healthBars.clearRect(0, 0, 300, 300);
             return;
         }
+        healthBars.clearRect(0, 0, 300, 300);
         this.player.ice--;
         this.player.fire--;
         jumpCooldown -= 1;
         if (this.player.position.y < -10 && gameOverMessage.innerHTML === "") {
             resetButton.style.display = "block";
+            shopButton.style.display = "block";
             gameOverMessage.innerHTML = "You Died!"
             this.player.health = 0;
         }
         if (this.enemy.position.y < -10 && gameOverMessage.innerHTML === "") {
             resetButton.style.display = "block";
+            shopButton.style.display = "block";
             gameOverMessage.innerHTML = "You Won!";
             playerWin();
             this.enemy.dead = true;
@@ -567,6 +604,7 @@ class MainScene extends Scene3D {
         if (this.player.health === 0) {
             if (framesSinceDeath === 0) {
                 resetButton.style.display = "block";
+                shopButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Died!"
             }
             framesSinceDeath++;
@@ -601,6 +639,18 @@ class MainScene extends Scene3D {
         healthBars.font = "20px monospace";
         healthBars.fillStyle = "black";
         healthBars.fillText("Enemy: ", 0, 55);
+        if (cooldown > 0.5) {
+            healthBars.drawImage(cooldownIndicator, 10, 71, 48, 48)
+            healthBars.fillStyle = "black";
+            healthBars.fillRect(76, 71, 158, 28);
+            healthBars.fillStyle = "cyan";
+            if (targetCooldown === 0) {
+                healthBars.fillRect(80, 75, 75 + 75 * (1 - (cooldown / prevTargetCooldown)), 20);
+            } else {
+                prevTargetCooldown = targetCooldown;
+                healthBars.fillRect(80, 75, 75 * ((cooldown + 0.01) / (targetCooldown + 0.01)), 20);
+            }
+        }
         if (oldEnemyHealth > this.enemy.health) {
             let damageTaken = oldEnemyHealth - this.enemy.health;
             const angleToPlayer = Math.atan2(player.position.x - this.enemy.position.x, player.position.z - this.enemy.position.z);
@@ -821,6 +871,7 @@ const levelSelect = () => {
             currLevel = i;
             document.getElementById("menu").innerHTML = "";
             loading.innerHTML = "Loading...";
+            document.getElementById("crosshair").style.display = "block";
             soundManager.levelMusic.loop();
             soundManager.menuMusic.stop();
             if (mainScene.hidden) {
@@ -1130,7 +1181,7 @@ const mainMenu = () => {
     levelSelectButton.style.left = "50%";
     levelSelectButton.style.top = "20%";
     levelSelectButton.style.transform = "translate(-50%, -50%)";
-    levelSelectButton.innerHTML = "Level Select";
+    levelSelectButton.innerHTML = "Play";
     levelSelectButton.onclick = () => {
         levelSelect();
     }
@@ -1152,7 +1203,7 @@ const mainMenu = () => {
     instructionButton.style.left = "50%";
     instructionButton.style.top = "42%";
     instructionButton.style.transform = "translate(-50%, -50%)";
-    instructionButton.innerHTML = "Instructions";
+    instructionButton.innerHTML = "How To Play";
     instructionButton.onclick = () => {
         document.getElementById("instructions").style.display = "block";
     }
@@ -1177,11 +1228,27 @@ resetButton.onclick = () => {
     mainScene.removeEnemy();
     mainScene.hide();
     resetButton.style.display = "none";
+    shopButton.style.display = "none";
     menu.innerHTML = "";
     gameOverMessage.innerHTML = "";
+    document.getElementById("crosshair").style.display = "none";
     soundManager.levelMusic.stop();
     soundManager.menuMusic.loop();
+    healthPlayerLost = 0;
     levelSelect();
+}
+shopButton.onclick = () => {
+    mainScene.removeEnemy();
+    mainScene.hide();
+    resetButton.style.display = "none";
+    shopButton.style.display = "none";
+    menu.innerHTML = "";
+    gameOverMessage.innerHTML = "";
+    document.getElementById("crosshair").style.display = "none";
+    soundManager.levelMusic.stop();
+    soundManager.menuMusic.loop();
+    healthPlayerLost = 0;
+    shop();
 }
 document.addEventListener('contextmenu', e => {
     if (menu.innerHTML === "") {
@@ -1189,6 +1256,7 @@ document.addEventListener('contextmenu', e => {
     }
 });
 const playerWin = () => {
+    shopButton.style.display = "block";
     const levelWins = localProxy.levelWins;
     if (!levelWins[currLevel]) {
         levelWins[currLevel] = 1;

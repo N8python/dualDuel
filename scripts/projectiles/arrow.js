@@ -70,7 +70,7 @@ class Arrow {
                     if (this.laser) {
                         playerTakeDamage(1 + Math.random() * 1, "ranged");
                     } else if (this.bullet) {
-                        playerTakeDamage(2 + Math.random() * 4, "ranged");
+                        playerTakeDamage(2 + Math.random() * 2, "ranged");
                     } else {
                         playerTakeDamage(5 + Math.random() * 8, "ranged");
                     }
@@ -105,7 +105,7 @@ class Arrow {
                 if (this.velocity) {
                     this.target.body.setVelocity(this.target.body.velocity.x + this.velocity.x * 0.5 * (this.laser ? 0.33 : 1), this.target.body.velocity.y + this.velocity.y * 0.5 * (this.laser ? 0.33 : 1), this.target.body.velocity.z + this.velocity.z * 0.5 * (this.laser ? 0.33 : 1));
                 } else {
-                    this.target.body.setVelocity(this.target.body.velocity.x + 4 * Math.sin(this.arrow.body.rotation.y) * (this.laser ? 0.33 : 1), this.target.body.velocity.y + 3 * (this.laser ? 0.33 : 1), this.target.body.velocity.z + 4 * Math.cos(this.arrow.body.rotation.y) * (this.laser ? 0.33 : 1));
+                    this.target.body.setVelocity(this.target.body.velocity.x + 4 * Math.sin(this.arrow.body.rotation.y) * (this.bullet ? 0.33 : 1), this.target.body.velocity.y + 3 * (this.bullet ? 0.33 : 1), this.target.body.velocity.z + 4 * Math.cos(this.arrow.body.rotation.y) * (this.bullet ? 0.33 : 1));
                 }
             }
             this.arrow.visible = false;

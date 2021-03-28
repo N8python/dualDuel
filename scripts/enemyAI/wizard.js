@@ -46,6 +46,7 @@ class WizardEnemyAI extends EnemyAI {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!";
+                shopButton.style.display = "block";
                 playerWin();
                 this.enemy.dead = true;
                 this.enemy.animation.play("Death", 120, false);

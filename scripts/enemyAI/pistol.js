@@ -1,6 +1,6 @@
 class PistolEnemyAI extends EnemyAI {
     constructor(enemy) {
-        super(enemy, 162);
+        super(enemy, 125);
         this.enemy.animation.play('Idle');
         this.enemy.aggro = false;
         this.enemy.aggroState = "none";
@@ -55,6 +55,7 @@ class PistolEnemyAI extends EnemyAI {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!";
+                shopButton.style.display = "block";
                 playerWin();
                 this.enemy.dead = true;
                 this.enemy.animation.play("Death", 120, false);

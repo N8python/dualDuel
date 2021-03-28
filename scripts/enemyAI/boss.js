@@ -145,6 +145,7 @@ class BossEnemyAI extends EnemyAI {
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
+                shopButton.style.display = "block";
                 gameOverMessage.innerHTML = "You Won!";
                 playerWin();
                 this.enemy.dead = true;
