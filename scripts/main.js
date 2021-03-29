@@ -1329,7 +1329,7 @@ setInterval(() => {
     if (loading.innerHTML !== "") {
         loadingMenu.style.display = "block";
         if (tipTick > 3000 || tipTick === 0) {
-            if (Math.random() < 1) {
+            if (Math.random() < 0.25) {
                 tips.innerHTML = hints.levelSpecific[currLevel][Math.floor(Math.random() * hints.levelSpecific[currLevel].length)];
             } else {
                 tips.innerHTML = hints.default[Math.floor(Math.random() * hints.default.length)];
