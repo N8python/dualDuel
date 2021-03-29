@@ -1319,7 +1319,27 @@ setTimeout(() => {
         }
     });
 }, 500);
+const loadingMenu = document.getElementById("loadingMenu");
+const tips = document.getElementById("tips");
+let tipTick = 0;
+let prevTipTime = Date.now();
 setInterval(() => {
     soundManager.menuMusic.setVolume(localProxy.musicVolume);
     soundManager.levelMusic.setVolume(localProxy.musicVolume);
+    if (loading.innerHTML !== "") {
+        loadingMenu.style.display = "block";
+        if (tipTick > 3000 || tipTick === 0) {
+            if (Math.random() < 1) {
+                tips.innerHTML = hints.levelSpecific[currLevel][Math.floor(Math.random() * hints.levelSpecific[currLevel].length)];
+            } else {
+                tips.innerHTML = hints.default[Math.floor(Math.random() * hints.default.length)];
+            }
+            tipTick = 0;
+        }
+        tipTick += Date.now() - prevTipTime;
+    } else {
+        tipTick = 0;
+        loadingMenu.style.display = "none";
+    }
+    prevTipTime = Date.now();
 }, 30)

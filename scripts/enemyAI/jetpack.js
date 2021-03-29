@@ -6,7 +6,7 @@ class JetpackEnemyAI extends EnemyAI {
         this.enemy.aggro = false;
         this.enemy.aggroState = "none";
         this.enemy.shootTick = 0;
-        soundManager.jetpack.setVolume(0.75);
+        soundManager.jetpack.setVolume(0.6 * localProxy.sfxVolume);
         soundManager.jetpack.loop();
     }
     update(target, ground) {
