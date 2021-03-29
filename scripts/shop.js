@@ -138,17 +138,17 @@ const items = {
             description: "Standard weapon. Hits and slashes. Blocks on right click. Moderate damage.",
             cost: 0,
         },
-        axe: {
-            title: "Axe",
-            image: "axe.png",
-            description: "Hits and blocks like the sword does, while doing slightly more damage. Can perform a powerful AOE attack on enemies.",
-            cost: 750
-        },
         bow: {
             title: "Bow",
             image: "bow.png",
             description: "Can shoot and fire arrows. As its special attack, fires a supercharged, high-damage, high-velocity shot. Also can perform a melee attack if necessary.",
             cost: 500
+        },
+        axe: {
+            title: "Axe",
+            image: "axe.png",
+            description: "Hits and blocks like the sword does, while doing slightly more damage. Can perform a powerful AOE attack on enemies.",
+            cost: 750
         },
         crossbow: {
             title: "Crossbow",

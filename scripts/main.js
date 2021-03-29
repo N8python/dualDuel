@@ -106,6 +106,7 @@ const loading = document.getElementById("loading");
 const gameOverMessage = document.getElementById("gameOverMessage");
 const resetButton = document.getElementById("resetButton");
 const shopButton = document.getElementById("shopButton");
+const playAgain = document.getElementById("playAgain");
 const menu = document.getElementById("menu");
 const cooldownIndicator = document.getElementById("cooldownIndicator");
 if (!localProxy.playerArmor) {
@@ -143,6 +144,9 @@ if (localProxy.cameraShake === undefined) {
 }
 if (localProxy.damageIndicators === undefined) {
     localProxy.damageIndicators = "on";
+}
+if (localProxy.crosshair === undefined) {
+    localProxy.crosshair = "on";
 }
 const hardReset = () => {
     localProxy.playerArmor = "none";
@@ -590,13 +594,17 @@ class MainScene extends Scene3D {
         if (this.player.position.y < -10 && gameOverMessage.innerHTML === "") {
             resetButton.style.display = "block";
             shopButton.style.display = "block";
-            gameOverMessage.innerHTML = "You Died!"
+            playAgain.style.display = "block";
+            gameOverMessage.innerHTML = "You Died!";
+            mainScene.input.mouse.releasePointerLock();
             this.player.health = 0;
         }
         if (this.enemy.position.y < -10 && gameOverMessage.innerHTML === "") {
             resetButton.style.display = "block";
             shopButton.style.display = "block";
+            playAgain.style.display = "block";
             gameOverMessage.innerHTML = "You Won!";
+            mainScene.input.mouse.releasePointerLock();
             playerWin();
             this.enemy.dead = true;
         }
@@ -605,7 +613,9 @@ class MainScene extends Scene3D {
             if (framesSinceDeath === 0) {
                 resetButton.style.display = "block";
                 shopButton.style.display = "block";
-                gameOverMessage.innerHTML = "You Died!"
+                playAgain.style.display = "block";
+                gameOverMessage.innerHTML = "You Died!";
+                mainScene.input.mouse.releasePointerLock();
             }
             framesSinceDeath++;
         }
@@ -871,7 +881,9 @@ const levelSelect = () => {
             currLevel = i;
             document.getElementById("menu").innerHTML = "";
             loading.innerHTML = "Loading...";
-            document.getElementById("crosshair").style.display = "block";
+            if (localProxy.crosshair === "on") {
+                document.getElementById("crosshair").style.display = "block";
+            }
             soundManager.levelMusic.loop();
             soundManager.menuMusic.stop();
             if (mainScene.hidden) {
@@ -1150,12 +1162,28 @@ const settingsMenu = () => {
         }
         damageIndicators.innerHTML = `Damage Indicators: ${localProxy.damageIndicators === "on" ? "On": "Off"}`;
     };
+    const crosshair = document.createElement("button");
+    crosshair.classList.add("btn");
+    crosshair.zIndex = 5;
+    crosshair.style.position = "absolute";
+    crosshair.style.left = "50%";
+    crosshair.style.top = "62%";
+    crosshair.style.transform = "translate(-50%, -50%)";
+    crosshair.innerHTML = `Crosshair: ${localProxy.crosshair === "on" ? "On": "Off"}`;
+    crosshair.onclick = () => {
+        if (localProxy.crosshair === "on") {
+            localProxy.crosshair = "off";
+        } else {
+            localProxy.crosshair = "on";
+        }
+        crosshair.innerHTML = `Crosshair: ${localProxy.crosshair === "on" ? "On": "Off"}`;
+    };
     const backButton = document.createElement("button");
     backButton.classList.add("btn");
     backButton.zIndex = 5;
     backButton.style.position = "absolute";
     backButton.style.left = "50%";
-    backButton.style.top = "65%";
+    backButton.style.top = "77%";
     backButton.style.transform = "translate(-50%, -50%)";
     backButton.innerHTML = "Back";
     backButton.style.zIndex = 5;
@@ -1171,6 +1199,7 @@ const settingsMenu = () => {
     menu.appendChild(musicSlider);
     menu.appendChild(cameraShake);
     menu.appendChild(damageIndicators);
+    menu.appendChild(crosshair);
 }
 const mainMenu = () => {
     menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/logo.gif">`;
@@ -1229,6 +1258,7 @@ resetButton.onclick = () => {
     mainScene.hide();
     resetButton.style.display = "none";
     shopButton.style.display = "none";
+    playAgain.style.display = "none";
     menu.innerHTML = "";
     gameOverMessage.innerHTML = "";
     document.getElementById("crosshair").style.display = "none";
@@ -1242,6 +1272,7 @@ shopButton.onclick = () => {
     mainScene.hide();
     resetButton.style.display = "none";
     shopButton.style.display = "none";
+    playAgain.style.display = "none";
     menu.innerHTML = "";
     gameOverMessage.innerHTML = "";
     document.getElementById("crosshair").style.display = "none";
@@ -1250,13 +1281,41 @@ shopButton.onclick = () => {
     healthPlayerLost = 0;
     shop();
 }
+playAgain.onclick = () => {
+    mainScene.removeEnemy();
+    mainScene.hide();
+    resetButton.style.display = "none";
+    shopButton.style.display = "none";
+    playAgain.style.display = "none";
+    menu.innerHTML = "";
+    gameOverMessage.innerHTML = "";
+    document.getElementById("crosshair").style.display = "none";
+    soundManager.levelMusic.stop();
+    soundManager.menuMusic.loop();
+    document.getElementById("menu").innerHTML = "";
+    loading.innerHTML = "Loading...";
+    if (localProxy.crosshair === "on") {
+        document.getElementById("crosshair").style.display = "block";
+    }
+    soundManager.levelMusic.loop();
+    soundManager.menuMusic.stop();
+    if (mainScene.hidden) {
+        mainScene.reset();
+        mainScene.show();
+    } else {
+        bootFunction();
+    }
+}
 document.addEventListener('contextmenu', e => {
     if (menu.innerHTML === "") {
         e.preventDefault();
     }
 });
 const playerWin = () => {
+    playAgain.style.display = "block";
     shopButton.style.display = "block";
+    playAgain.style.display = "block";
+    mainScene.input.mouse.releasePointerLock();
     const levelWins = localProxy.levelWins;
     if (!levelWins[currLevel]) {
         levelWins[currLevel] = 1;
