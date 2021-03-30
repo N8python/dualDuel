@@ -148,6 +148,9 @@ if (localProxy.damageIndicators === undefined) {
 if (localProxy.crosshair === undefined) {
     localProxy.crosshair = "on";
 }
+if (localProxy.loadingScreen === undefined) {
+    localProxy.loadingScreen = "hints";
+}
 const hardReset = () => {
     localProxy.playerArmor = "none";
     localProxy.playerHat = "none";
@@ -832,6 +835,28 @@ document.onkeydown = (e) => {
         jumpCooldown = 15;
         canJump = false;
     }
+    if (snaking) {
+        if (e.key === "ArrowRight") {
+            if (SnakeGame.snake.direction !== "left") {
+                SnakeGame.snake.direction = "right";
+            }
+        }
+        if (e.key === "ArrowLeft") {
+            if (SnakeGame.snake.direction !== "right") {
+                SnakeGame.snake.direction = "left";
+            }
+        }
+        if (e.key === "ArrowUp") {
+            if (SnakeGame.snake.direction !== "down") {
+                SnakeGame.snake.direction = "up";
+            }
+        }
+        if (e.key === "ArrowDown") {
+            if (SnakeGame.snake.direction !== "up") {
+                SnakeGame.snake.direction = "down";
+            }
+        }
+    }
 }
 
 const config = {
@@ -1178,12 +1203,29 @@ const settingsMenu = () => {
         }
         crosshair.innerHTML = `Crosshair: ${localProxy.crosshair === "on" ? "On": "Off"}`;
     };
+    const loadingScreen = document.createElement("button");
+    loadingScreen.classList.add("btn");
+    loadingScreen.zIndex = 5;
+    loadingScreen.style.position = "absolute";
+    loadingScreen.style.left = "50%";
+    loadingScreen.style.top = "73%";
+    loadingScreen.style.width = "300px";
+    loadingScreen.style.transform = "translate(-50%, -50%)";
+    loadingScreen.innerHTML = `Loading Screen: ${localProxy.loadingScreen === "hints" ? "Hints": "Snake"}`;
+    loadingScreen.onclick = () => {
+        if (localProxy.loadingScreen === "hints") {
+            localProxy.loadingScreen = "snake";
+        } else {
+            localProxy.loadingScreen = "hints";
+        }
+        loadingScreen.innerHTML = `Loading Screen: ${localProxy.loadingScreen === "hints" ? "Hints": "Snake"}`;
+    };
     const backButton = document.createElement("button");
     backButton.classList.add("btn");
     backButton.zIndex = 5;
     backButton.style.position = "absolute";
     backButton.style.left = "50%";
-    backButton.style.top = "77%";
+    backButton.style.top = "87%";
     backButton.style.transform = "translate(-50%, -50%)";
     backButton.innerHTML = "Back";
     backButton.style.zIndex = 5;
@@ -1200,6 +1242,7 @@ const settingsMenu = () => {
     menu.appendChild(cameraShake);
     menu.appendChild(damageIndicators);
     menu.appendChild(crosshair);
+    menu.appendChild(loadingScreen);
 }
 const mainMenu = () => {
     menu.innerHTML = `<img style="position: absolute;left:50%;top:7.5%;transform:translate(-50%, -50%);z-index:5;" src="assets/images/logo.gif">`;
@@ -1380,22 +1423,38 @@ setTimeout(() => {
 }, 500);
 const loadingMenu = document.getElementById("loadingMenu");
 const tips = document.getElementById("tips");
+const snakeCanvas = document.getElementById("snakeCanvas");
+const snakeContext = snakeCanvas.getContext("2d");
+const secondaryLevelContainer = document.getElementById("secondaryLevelContainer");
 let tipTick = 0;
 let prevTipTime = Date.now();
+let snaking = false;
 setInterval(() => {
+    snaking = false;
     soundManager.menuMusic.setVolume(localProxy.musicVolume);
     soundManager.levelMusic.setVolume(localProxy.musicVolume);
     if (loading.innerHTML !== "") {
-        loadingMenu.style.display = "block";
-        if (tipTick > 3000 || tipTick === 0) {
-            if (Math.random() < 0.25) {
-                tips.innerHTML = hints.levelSpecific[currLevel][Math.floor(Math.random() * hints.levelSpecific[currLevel].length)];
-            } else {
-                tips.innerHTML = hints.default[Math.floor(Math.random() * hints.default.length)];
+        if (localProxy.loadingScreen === "hints") {
+            tips.style.display = "inline-block";
+            snakeCanvas.style.display = "none";
+            loadingMenu.style.display = "block";
+            if (tipTick > 3000 || tipTick === 0) {
+                if (Math.random() < 0.25) {
+                    tips.innerHTML = hints.levelSpecific[currLevel][Math.floor(Math.random() * hints.levelSpecific[currLevel].length)];
+                } else {
+                    tips.innerHTML = hints.default[Math.floor(Math.random() * hints.default.length)];
+                }
+                tipTick = 0;
             }
-            tipTick = 0;
+            tipTick += Date.now() - prevTipTime;
+        } else {
+            loadingMenu.style.display = "block";
+            tips.style.display = "none";
+            snakeCanvas.style.display = "inline-block";
+            secondaryLevelContainer.style.top = "calc(40% + 178px)";
+            SnakeGame.update(snakeContext);
+            snaking = true;
         }
-        tipTick += Date.now() - prevTipTime;
     } else {
         tipTick = 0;
         loadingMenu.style.display = "none";

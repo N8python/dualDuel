@@ -22,8 +22,11 @@
         <div style="z-index:20;position: absolute;top:40%;left:50%;width:50%;transform:translate(-50%, -50%);background-color:grey;border:2px solid black;">
             <h1 id="loading" style="z-index:20;color:rgb(255, 255, 255);font-size:30px;text-align:center;"></h1>
         </div>
-        <div style="z-index:20;position: absolute;top:calc(40% + 70px);left:50%;width:50%;transform:translate(-50%, -50%);background-color:grey;border:2px solid black;">
-            <p id="tips" style="z-index:20;color:rgb(200, 200, 200);font-size:20px;text-align:center;"></p>
+        <div id="secondaryLevelContainer" style="z-index:20;position: absolute;top:calc(40% + 70px);left:50%;width:50%;transform:translate(-50%, -50%);background-color:grey;border:2px solid black;">
+            <p id="tips" style="z-index:20;color:rgb(200, 200, 200);font-size:20px;text-align:center;display:inline-block;margin-left:4px;"></p>
+            <div style="text-align:center;">
+                <canvas style="display:none;z-index:20;margin-top:8px;" id="snakeCanvas" width="300px" height="300px"></canvas>
+            </div>
         </div>
 
     </div>
@@ -53,6 +56,7 @@
     <script src="scripts/constants.js"></script>
     <script src="lib/three-nebula.js"></script>
     <script src="scripts/proxy.js"></script>
+    <script src="scripts/snake.js"></script>
     <script src="scripts/shop.js"></script>
     <script src="scripts/weapon.js"></script>
     <script src="scripts/weapons/sword.js"></script>
