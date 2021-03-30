@@ -51,6 +51,7 @@ class PistolEnemyAI extends EnemyAI {
         target = player;
         const futurePos = futurePlayerPos(this.enemy.position.distanceTo(player.position) / 20);
         super.update(target, ground);
+        this.stayUp(1);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
@@ -70,7 +71,6 @@ class PistolEnemyAI extends EnemyAI {
                 this.enemy.aggroState = "pursue";
             }
             this.enemy.aggro = true;
-            this.stayUp(1);
             this.enemy.gun.rotation.x = 0;
             this.enemy.gun.position.z = 0;
             this.enemy.gun.position.y = -5;
@@ -79,7 +79,6 @@ class PistolEnemyAI extends EnemyAI {
             if (this.enemy.aggroState === "pursue") {
                 this.rotateTowards(futurePos.x, futurePos.z);
                 this.moveYDir(0.2);
-                this.stayUp(1);
                 if (this.enemy.position.distanceTo(target.position) < 2.5) {
                     let fleeWeight = (1 - this.enemy.health / this.enemy.maxHealth) + 0.3;
                     if (Math.random() < fleeWeight) {
@@ -149,20 +148,17 @@ class PistolEnemyAI extends EnemyAI {
             } else if (this.enemy.aggroState === "flee") {
                 this.rotateTowards(-(player.position.x - this.enemy.position.x), -(player.position.z - this.enemy.position.z));
                 this.moveYDir(0.25);
-                this.stayUp(1);
                 if (Math.random() < 0.02) {
                     this.enemy.aggroState = "pursue";
                 }
             } else if (this.enemy.aggroState === "strafe") {
                 this.rotateTowards(player.position.x, player.position.z, 4, this.enemy.strafeAngle);
                 this.moveYDir(0.2);
-                this.stayUp(1);
                 if (Math.random() < 0.015) {
                     this.enemy.aggroState = "pursue";
                 }
             } else if (this.enemy.aggroState === "shoot") {
                 this.rotateTowards(futurePos.x, futurePos.z);
-                this.stayUp(1);
                 this.enemy.gun.rotation.x = Math.PI / 2;
                 this.enemy.gun.position.z = -10;
                 this.enemy.gun.position.x = -12.5;
@@ -170,10 +166,8 @@ class PistolEnemyAI extends EnemyAI {
             } else if (this.enemy.aggroState === "reload") {
                 this.enemy.gun.rotation.x = Math.PI / 2;
                 this.rotateTowards(futurePos.x, futurePos.z);
-                this.stayUp(1);
             } else if (this.enemy.aggroState === "attack") {
                 this.rotateTowards(futurePos.x, futurePos.z);
-                this.stayUp(1);
                 this.enemy.attackTick++;
                 if (this.enemy.attackTick % 40 === 0) {
                     if (this.enemy.position.distanceTo(target.position) < 3) {
@@ -185,7 +179,6 @@ class PistolEnemyAI extends EnemyAI {
                 }
             } else if (this.enemy.aggroState === "dodge") {
                 this.rotateTowards(futurePos.x, futurePos.z);
-                this.stayUp(1);
             }
             if (this.enemy.aggroState !== "shoot") {
                 soundManager.pistolFire.stop();

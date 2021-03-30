@@ -36,6 +36,7 @@ class RangedEnemyAI extends EnemyAI {
         target = player;
         const futurePos = futurePlayerPos(this.enemy.position.distanceTo(player.position) / 10);
         super.update(target, ground);
+        this.stayUp(1);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
@@ -74,10 +75,8 @@ class RangedEnemyAI extends EnemyAI {
                 this.enemy.aggroState = "pursue";
             }
             this.enemy.aggro = true;
-            this.stayUp(1);
             if (this.enemy.aggroState === "shootArrow") {
                 this.rotateTowards(futurePos.x, futurePos.z);
-                this.stayUp(1);
                 this.enemy.arrowTick++;
                 if (this.enemy.bow) {
                     this.enemy.bow.scale.set(0.055, 0.055, 0.055 + this.enemy.arrowTick / 1500);
@@ -102,7 +101,6 @@ class RangedEnemyAI extends EnemyAI {
                 }
                 this.rotateTowards(player.position.x, player.position.z);
                 this.moveYDir(0.2);
-                this.stayUp(1);
             } else if (this.enemy.position.distanceTo(target.position) < 3.5) {
                 if (this.enemy.aggroState !== "flee") {
                     this.enemy.animation.play("Running");
@@ -110,7 +108,6 @@ class RangedEnemyAI extends EnemyAI {
                 }
                 this.rotateTowards(-(player.position.x - this.enemy.position.x), -(player.position.z - this.enemy.position.z));
                 this.moveYDir(0.25);
-                this.stayUp(1);
             } else {
                 this.rotateTowards(player.position.x, player.position.z);
                 if (this.enemy.aggroState !== "wait") {
@@ -120,7 +117,6 @@ class RangedEnemyAI extends EnemyAI {
                 if (this.enemy.position.distanceTo(target.position) < 4.5) {
                     this.moveYDir(0, 0.95);
                 }
-                this.stayUp(1);
                 if (Math.random() < 0.05) {
                     //this.enemy.arrow.visible = true;
                     this.enemy.aggroState = "shootArrow";
@@ -145,7 +141,6 @@ class RangedEnemyAI extends EnemyAI {
             this.enemy.attacking = false;
         }
         if (this.enemy && this.enemy.body && this.enemy.position.distanceTo(target.position) < 2 && this.enemy.cooldown < 0 && target.health > 0) {
-            this.stayUp(1);
             if (!this.enemy.attacking) {
                 this.enemy.animation.play("Slashing");
             }

@@ -23,6 +23,7 @@ class KnightEnemyAI extends EnemyAI {
     }
     update(target, ground) {
         super.update(target, ground);
+        this.stayUp(1);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
@@ -63,7 +64,6 @@ class KnightEnemyAI extends EnemyAI {
                 this.enemy.attacking = false;
             }
         } else if (this.enemy.cooldown > 0) {
-            this.stayUp(1);
             this.rotateTowards(player.position.x, player.position.z);
         }
         if ((this.enemy.position.distanceTo(target.position) < 5 || this.enemy.health < this.enemy.maxHealth || this.enemy.aggro) && !this.enemy.attacking && target.health > 0) {
@@ -80,18 +80,15 @@ class KnightEnemyAI extends EnemyAI {
             if (this.enemy.aggroState === "pursue") {
                 this.rotateTowards(player.position.x, player.position.z);
                 this.moveYDir(0.2);
-                this.stayUp(1);
             } else if (this.enemy.aggroState === "strafe") {
                 this.rotateTowards(player.position.x, player.position.z, 4, this.enemy.strafeAngle);
                 this.moveYDir(0.2);
-                this.stayUp(1);
                 if (Math.random() < 0.015) {
                     this.enemy.aggroState = "pursue";
                 }
             } else if (this.enemy.aggroState === "flee") {
                 this.rotateTowards(-(player.position.x - this.enemy.position.x), -(player.position.z - this.enemy.position.z));
                 this.moveYDir(0.25);
-                this.stayUp(1);
                 if (Math.random() < 0.02) {
                     this.enemy.aggroState = "pursue";
                 }

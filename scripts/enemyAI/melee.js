@@ -7,6 +7,7 @@ class MeleeEnemyAI extends EnemyAI {
     update(target, ground) {
         //console.log(this.enemy.body.position);
         super.update(target, ground);
+        this.stayUp(1);
         if (this.enemy.health === 0) {
             if (!this.enemy.dead) {
                 resetButton.style.display = "block";
@@ -50,7 +51,6 @@ class MeleeEnemyAI extends EnemyAI {
             //this.enemy.body.setAngularVelocityY(-angleDifference(theta, this.enemy.body.rotation.y) * 4);
             this.rotateTowards(player.position.x, player.position.z);
             this.moveYDir();
-            this.stayUp(1);
         }
         //return;
         if (Math.abs(target.position.y - this.enemy.position.y) > 8 || target.health === 0) {
