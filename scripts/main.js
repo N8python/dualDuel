@@ -109,6 +109,7 @@ const shopButton = document.getElementById("shopButton");
 const playAgain = document.getElementById("playAgain");
 const menu = document.getElementById("menu");
 const cooldownIndicator = document.getElementById("cooldownIndicator");
+const tutorialText = document.getElementById("tutorialText");
 if (!localProxy.playerArmor) {
     localProxy.playerArmor = "none";
 }
@@ -150,6 +151,9 @@ if (localProxy.crosshair === undefined) {
 }
 if (localProxy.loadingScreen === undefined) {
     localProxy.loadingScreen = "hints";
+}
+if (localProxy.tutorialStep === undefined) {
+    localProxy.tutorialStep = 0;
 }
 const hardReset = () => {
     localProxy.playerArmor = "none";
@@ -424,10 +428,19 @@ class MainScene extends Scene3D {
                 return;
             }
             if (instance.input.mousePointer.rightButtonDown()) {
+                if (localProxy.tutorialStep === 1) {
+                    localProxy.tutorialStep++;
+                }
                 instance.weaponController.secondaryAttack();
             } else if (instance.keys.Alt.isDown) {
+                if (localProxy.tutorialStep === 2) {
+                    localProxy.tutorialStep++;
+                }
                 instance.weaponController.specialAttack();
             } else {
+                if (localProxy.tutorialStep === 0) {
+                    localProxy.tutorialStep++;
+                }
                 instance.weaponController.primaryAttack();
             }
             instance.input.mouse.requestPointerLock()
@@ -589,6 +602,17 @@ class MainScene extends Scene3D {
         if (!this.initiated || this.hidden || !this.enemy) {
             healthBars.clearRect(0, 0, 300, 300);
             return;
+        }
+        if (localProxy.tutorialStep === 0) {
+            tutorialText.innerHTML = "Click to attack. Try it.";
+        } else if (localProxy.tutorialStep === 1) {
+            tutorialText.innerHTML = "Right click to block. Try it.";
+        } else if (localProxy.tutorialStep === 2) {
+            tutorialText.innerHTML = "Shift + click to slash. Try it.";
+        } else if (localProxy.tutorialStep === 3) {
+            tutorialText.innerHTML = "Use WASD to move the player. Space to jump. Good luck!";
+        } else {
+            tutorialText.innerHTML = "";
         }
         healthBars.clearRect(0, 0, 300, 300);
         this.player.ice--;
@@ -805,26 +829,43 @@ class MainScene extends Scene3D {
             playerTakeDamage(0.25, "melee", false)
         }
         if (this.keys.w.isDown) {
+            if (localProxy.tutorialStep === 3) {
+                localProxy.tutorialStep++;
+            }
             velocityUpdate[0] += Math.sin(theta) * speed;
             velocityUpdate[2] += Math.cos(theta) * speed;
         } else if (this.keys.s.isDown) {
+            if (localProxy.tutorialStep === 3) {
+                localProxy.tutorialStep++;
+            }
             velocityUpdate[0] -= Math.sin(theta) * speed;
             velocityUpdate[2] -= Math.cos(theta) * speed;
         }
         if (this.keys.a.isDown) {
+            if (localProxy.tutorialStep === 3) {
+                localProxy.tutorialStep++;
+            }
             velocityUpdate[0] += Math.sin(theta + Math.PI / 2) * speed;
             velocityUpdate[2] += Math.cos(theta + Math.PI / 2) * speed;
         } else if (this.keys.d.isDown) {
+            if (localProxy.tutorialStep === 3) {
+                localProxy.tutorialStep++;
+            }
             velocityUpdate[0] += Math.sin(theta - Math.PI / 2) * speed;
             velocityUpdate[2] += Math.cos(theta - Math.PI / 2) * speed;
         }
         velocityUpdate[0] *= 0.975;
         velocityUpdate[2] *= 0.975;
-        this.player.body.setVelocity(...velocityUpdate);
+        if (localProxy.tutorialStep > 2) {
+            this.player.body.setVelocity(...velocityUpdate);
+        }
     }
 }
 document.onkeydown = (e) => {
-    if (e.key === " " && player && canJump && player.health > 0 && loading.innerHTML === "") {
+    if (e.key === " " && player && localProxy.tutorialStep > 2 && canJump && player.health > 0 && loading.innerHTML === "") {
+        if (localProxy.tutorialStep === 3) {
+            localProxy.tutorialStep++;
+        }
         const oldVelocity = player.body.velocity;
         const velocityUpdate = [oldVelocity.x, oldVelocity.y, oldVelocity.z];
         velocityUpdate[1] += 5;
