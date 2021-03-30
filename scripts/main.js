@@ -1331,10 +1331,36 @@ const mainMenu = () => {
     settingsButton.onclick = () => {
         settingsMenu();
     }
+    const resetButton = document.createElement("button");
+    resetButton.classList.add("btn");
+    settingsButton.style.zIndex = 5;
+    resetButton.style.position = "absolute";
+    resetButton.style.left = "50%";
+    resetButton.style.top = "64%";
+    resetButton.style.transform = "translate(-50%, -50%)";
+    resetButton.innerHTML = "Reset";
+    resetButton.onclick = () => {
+        Swal.fire({
+            title: 'Are you sure you want to reset?',
+            text: 'All your in-game progress will be lost. Your settings will be preserved.',
+            icon: 'error',
+            confirmButtonText: "Yes. I know what I'm doing. (Reset)",
+            cancelButtonText: 'I want to keep my progress. (Cancel)',
+            confirmButtonColor: '#cc0000',
+            cancelButtonColor: '#00cc00',
+            showCancelButton: true,
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                hardReset();
+            }
+        })
+    };
     menu.appendChild(levelSelectButton);
     menu.appendChild(shopButton);
     menu.appendChild(instructionButton);
     menu.appendChild(settingsButton);
+    menu.appendChild(resetButton);
 }
 mainMenu();
 resetButton.onclick = () => {
